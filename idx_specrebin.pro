@@ -6,8 +6,8 @@ pro idx_specrebin
  fits_dir='~/Desktop/TESI/models/sandage_dcomb/'
  prefix_file='sandage_varZ_v4.1eq_spec_'
  suffix_spec='dcomb090n_'
- suffix_idx='dcomb_idx_'
- suffix_idx_werr='dcomb_idx_werr'
+ suffix_idx='dcomb090n_idx_'
+ suffix_idx_werr='dcomb090n_idx_werr'
  end_file='.fits'
  sndg_num=indgen(41)
  tot_file=n_elements(sndg_num)
@@ -109,16 +109,16 @@ pro idx_specrebin
  
  
  
-   err_arr=fltarr(n_elements(wl))+err
+   err_arr=fltarr(n_elements(wl_rebin))+err
    ;mean_flx_arr=fltarr(n_elements(wl[idx_lim]))+mean_flx
    ;pp1=plot( wl_rebin,SPEC_interp)
    ;pp2=plot(wl[idx_lim], mean_flx_arr,color='red', /overplot)
    ;pp3=plot(wl[idx_lim], err_arr, color='blue', /overplot)
-   d4000n_arr=d4000_index(wl, SPEC[*,idx_model], err_arr, narrow=1)
-   HdHg_arr=comp_index(wl, SPEC[*,idx_model], err_arr, 'HdHg')
-   mg2fe_arr=comp_index(wl, SPEC[*,idx_model], err_arr, 'Mg2fe')
-   mgfep_arr=comp_index(wl, SPEC[*,idx_model], err_arr, 'MgFep')
-   lick_hb_arr=line_index(wl, SPEC[*,idx_model], err_arr, indexpars[where(strcmp(indexpars.index,'Lick_Hb'))])
+   d4000n_arr=d4000_index(wl_rebin, SPEC_interp, err_arr, narrow=1)
+   HdHg_arr=comp_index(wl_rebin, SPEC_interp, err_arr, 'HdHg')
+   mg2fe_arr=comp_index(wl_rebin, SPEC_interp, err_arr, 'Mg2fe')
+   mgfep_arr=comp_index(wl_rebin, SPEC_interp, err_arr, 'MgFep')
+   lick_hb_arr=line_index(wl_rebin, SPEC_interp, err_arr, indexpars[where(strcmp(indexpars.index,'Lick_Hb'))])
    
    d4000n=d4000n_arr[0]
    err_d4000n=d4000n_arr[1]
