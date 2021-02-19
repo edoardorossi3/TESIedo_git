@@ -5,21 +5,19 @@ pro idx_specrebin
  ;prog_dir='~/Desktop/TESIedo_git/'
  fits_dir='~/Desktop/TESI/models/sandage_dcomb/'
  prefix_file='sandage_varZ_v4.1eq_spec_'
- suffix_spec='dcomb090n_'
- suffix_idx='dcomb090n_idx_'
- suffix_idx_werr='dcomb090n_idx_s_werr'
+ suffix_spec='dcomb_'
+ suffix_idx='dcomb_idx_'
+ suffix_idx_werr='dcomb_idx_s_werr'
  end_file='.fits'
- sndg_num=indgen(41)
+ sndg_num=indgen(2)
  tot_file=n_elements(sndg_num)
  
  SNR20=20.0
  dwl=1.0
  data_row=create_struct('IDX', !values.f_nan)
-; provatable=mrdfits('~/Desktop/TESI/models/sandage_dcomb/sandage_varZ_v4.1eq_spec_dcomb_idx_035.fits', 1, header)
- ;tag=tag_names(provatable)
- ;stop
- for i=1, tot_file-1 do begin
-  
+
+ ;for i=1, tot_file-1 do begin
+  i=1
   
   ;data_row=create_struct('IDX', !values.f_nan, 'D4000n_0', !values.f_nan, 'D4000n_200', !values.f_nan,'D4000n20',!values.f_nan, 'err20_D4000n', !values.f_nan, $
   ;                       'HdHg_0', !values.f_nan, 'HdHg_200', !values.f_nan, 'HdHg20', !values.f_nan, 'err20_HdHg', !values.f_nan,  $
@@ -47,7 +45,7 @@ pro idx_specrebin
   ;idx_model=0
  
   n_model=(size(SPEC))[2]
-  idx_lim=where(wl gt 3700. and wl lt 6000., nlim_wl)
+  idx_lim=where(wl gt 3700. and wl lt 8860., nlim_wl)
   wl_maxmin=[wl[idx_lim[0]], wl[idx_lim[-1]]]
   
   colnames=tag_names(data_row)
@@ -117,7 +115,7 @@ pro idx_specrebin
        data_table[idx_model].(col_num20)=tmp_arr[0]
        data_table[idx_model].(col_numerr20)=tmp_arr[1]
      endif 
-     
+     ;stop
      if ((where(strcmp(linenames, idx_names[k], /fold_case)) eq -1) and (where(strcmp(idx_names[k], 'd4000n', /fold_case)) eq -1) and $
           (where(strcmp(idx_names[k], 'd4000', /fold_case)) eq -1)) then begin
        col_num20=(where(strcmp(idx_names[k]+'20', colnames, /fold_case)))
@@ -135,7 +133,7 @@ pro idx_specrebin
  
  mwrfits, data_table, idx_werr_file, /create
  stop
- endfor 
+ ;endfor 
  
  ;stop
  
