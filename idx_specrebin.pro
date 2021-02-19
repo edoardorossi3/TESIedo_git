@@ -7,144 +7,218 @@ pro idx_specrebin
  prefix_file='sandage_varZ_v4.1eq_spec_'
  suffix_spec='dcomb090n_'
  suffix_idx='dcomb090n_idx_'
- suffix_idx_werr='dcomb090n_idx_werr'
+ suffix_idx_werr='dcomb090n_idx_s_werr'
  end_file='.fits'
  sndg_num=indgen(41)
  tot_file=n_elements(sndg_num)
  
- SNR=20.0
+ SNR20=20.0
  dwl=1.0
- 
+ data_row=create_struct('IDX', !values.f_nan)
+; provatable=mrdfits('~/Desktop/TESI/models/sandage_dcomb/sandage_varZ_v4.1eq_spec_dcomb_idx_035.fits', 1, header)
+ ;tag=tag_names(provatable)
+ ;stop
  for i=1, tot_file-1 do begin
   
-  data_row=create_struct('IDX', !values.f_nan, 'D4000n_0', !values.f_nan, 'D4000n_200', !values.f_nan,'D4000n',!values.f_nan, 'err_D4000n', !values.f_nan,$
-                         'HdHg_0', !values.f_nan, 'HdHg_200', !values.f_nan, 'HdHg', !values.f_nan, 'err_HdHg', !values.f_nan,$
-                         'Lick_Hb_0', !values.f_nan, 'Lick_Hb_200', !values.f_nan, 'Lick_Hb', !values.f_nan, 'err_Lick_Hb', !values.f_nan, $
-                         'Mg2Fe_0', !values.f_nan, 'Mg2Fe_200', !values.f_nan, 'Mg2Fe', !values.f_nan, 'err_Mg2Fe', !values.f_nan, $
-                         'MgFep_0', !values.f_nan, 'MgFep_200', !values.f_nan, 'MgFep', !values.f_nan, 'err_MgFep', !values.f_nan)
-  data_table=replicate(data_row, 12500)
   
+  ;data_row=create_struct('IDX', !values.f_nan, 'D4000n_0', !values.f_nan, 'D4000n_200', !values.f_nan,'D4000n20',!values.f_nan, 'err20_D4000n', !values.f_nan, $
+  ;                       'HdHg_0', !values.f_nan, 'HdHg_200', !values.f_nan, 'HdHg20', !values.f_nan, 'err20_HdHg', !values.f_nan,  $
+  ;                       'Lick_Hb_0', !values.f_nan, 'Lick_Hb_200', !values.f_nan, 'Lick_Hb20', !values.f_nan, 'err20_Lick_Hb', !values.f_nan,  $
+  ;                       'Mg2Fe_0', !values.f_nan, 'Mg2Fe_200', !values.f_nan, 'Mg2Fe20', !values.f_nan, 'err20_Mg2Fe', !values.f_nan,  $
+  ;                       'MgFep_0', !values.f_nan, 'MgFep_200', !values.f_nan, 'MgFep20', !values.f_nan, 'err20_MgFep', !values.f_nan)
+  ;data_table=replicate(data_row, 12500)
+
   spec_file=fits_dir+prefix_file+suffix_spec+string(sndg_num[i], format='(I3.3)')+end_file
   idx_file=fits_dir+prefix_file+suffix_idx+string(sndg_num[i], format='(I3.3)')+end_file
   idx_werr_file=fits_dir+prefix_file+suffix_idx_werr+string(sndg_num[i], format='(I3.3)')+end_file
- 
-  ;idx_model=0
- 
-  ;wl_maxmin=[3700.,5600.] ;angstrom unit
+  
+  idx_table=mrdfits(idx_file,1)
   SPEC=mrdfits(spec_file, 1)
   wl=mrdfits(spec_file, 0)
+  
+  linenames=indexpars.index
+  idx_names=tag_names(idx_table)
+  Nidx_names=n_elements(idx_names)
+  for j=1, Nidx_names-1 do begin
+    data_row=create_struct(data_row, idx_names[j]+'_0', !values.f_nan, idx_names[j]+'_200', !values.f_nan, idx_names[j]+'20', !values.f_nan, 'err20_'+idx_names[j], !values.f_nan)
+ 
+  endfor
+ ;stop
+  ;idx_model=0
+ 
   n_model=(size(SPEC))[2]
-  idx_lim=where(wl gt 3700. and wl lt 5600., nlim_wl)
+  idx_lim=where(wl gt 3700. and wl lt 6000., nlim_wl)
   wl_maxmin=[wl[idx_lim[0]], wl[idx_lim[-1]]]
   
   colnames=tag_names(data_row)
-  
-  idx_table=mrdfits(idx_file,1)
-  data_table.idx=idx_table.idx
-  d4000table=idx_table.d4000n
-  d4000n_0=d4000table[0,*]
-  d4000n_200=d4000table[4,*]
-  hdhgtable=idx_table.hdhg
-  hdhg_0=hdhgtable[0,*]
-  hdhg_200=hdhgtable[4,*]
-  hbtable=idx_table.lick_hb
-  lick_hb_0=hbtable[0,*]
-  lick_hb_200=hbtable[4,*]
-  mg2fetable=idx_table.mg2fe
-  mg2fe_0=mg2fetable[0,*]
-  mg2fe_200=mg2fetable[4,*]
-  mgfeptable=idx_table.mgfe_prime
-  mgfep_0=mgfeptable[0,*]
-  mgfep_200=mgfeptable[4,*]
-  
-  
-  ;col_idx=(where(strcmp(colnames,'idx',/fold_case)))[0]
-  col_d4000_0=(where(strcmp(colnames,'D4000n_0',/fold_case)))[0]
-  col_d4000_200=(where(strcmp(colnames,'D4000n_200',/fold_case)))[0]
-  col_d4000=(where(strcmp(colnames,'D4000n',/fold_case)))[0]
-  col_d4000_err=(where(strcmp(colnames,'err_D4000n',/fold_case)))[0]
-
-  col_hdhg_0=(where(strcmp(colnames,'HdHg_0',/fold_case)))[0]
-  col_hdhg_200=(where(strcmp(colnames,'HdHg_200',/fold_case)))[0]
-  col_HdHg=(where(strcmp(colnames,'HdHg',/fold_case)))[0]
-  col_hdhg_err=(where(strcmp(colnames,'err_HdHg',/fold_case)))[0]
-  col_lick_hb_0=(where(strcmp(colnames,'Lick_hb_0',/fold_case)))[0]
-  col_lick_hb_200=(where(strcmp(colnames,'Lick_hb_200',/fold_case)))[0]
-  col_lick_hb=(where(strcmp(colnames,'lick_hb',/fold_case)))[0]
-  col_lick_hb_err=(where(strcmp(colnames,'err_lick_hb',/fold_case)))[0]
-  col_mg2fe_0=(where(strcmp(colnames,'Mg2fe_0',/fold_case)))[0]
-  col_mg2fe_200=(where(strcmp(colnames,'Mg2fe_200',/fold_case)))[0]
-  col_mg2fe=(where(strcmp(colnames,'Mg2Fe',/fold_case)))[0]
-  col_mg2fe_err=(where(strcmp(colnames,'err_Mg2Fe',/fold_case)))[0]
-  col_mgfep_0=(where(strcmp(colnames,'mgfep_0',/fold_case)))[0]
-  col_mgfep_200=(where(strcmp(colnames,'mgfep_200',/fold_case)))[0]
-  col_mgfep=(where(strcmp(colnames,'mgfep',/fold_case)))[0]
-  col_mgfep_err=(where(strcmp(colnames,'err_mgfep',/fold_case)))[0]
-
-  data_table[*].(col_d4000_0)=d4000n_0[*]
-  data_table[*].(col_d4000_200)=d4000n_200[*]
-  data_table[*].(col_hdhg_0)=hdhg_0[*]
-  data_table[*].(col_hdhg_200)=hdhg_200[*]
-  data_table[*].(col_lick_hb_0)=lick_hb_0[*]
-  data_table[*].(col_lick_hb_200)=lick_hb_200[*]
-  data_table[*].(col_mg2fe_0)=mg2fe_0[*]
-  data_table[*].(col_mg2fe_200)=mg2fe_200[*]
-  data_table[*].(col_mgfep_0)=mgfep_0[*]
-  data_table[*].(col_mgfep_200)=mgfep_200[*]
-
-
   ;stop
+  data_table=replicate(data_row, n_model)
+  data_table.idx=idx_table.idx
+  
+  
+  ;stop
+  
+
   for idx_model=0, n_model-1 do begin
+    
+    for j=1, Nidx_names-1 do begin
+      col_num0=(where(strcmp(colnames,idx_names[j]+'_0',/fold_case)))[0]
+      col_num200=(where(strcmp(colnames,idx_names[j]+'_200',/fold_case)))[0]
+      tmp=idx_table[idx_model].(j)
+      data_table[idx_model].(col_num0)=tmp[0]
+      data_table[idx_model].(col_num200)=tmp[4]
+
+          
+    endfor
+  
+ ;mwrfits, data_table, idx_werr_file, /create
+  ;stop
+  
   
    ;model_num=12500*i+idx_model
    flx=flux_integral(wl, SPEC[*,idx_model], wl_maxmin)
    mean_flx=flx/(wl_maxmin[1]-wl_maxmin[0])
-   err=mean_flx/SNR
+   err20=mean_flx/SNR20
  
    n_wlreb=fix((wl_maxmin[1]-wl_maxmin[0])/dwl)+1
    wl_rebin=findgen(n_wlreb)*dwl+wl_maxmin[0]
    idx_lim=where(wl gt wl_maxmin[0] and wl lt wl_maxmin[1], nlim_wl)
  
-   SPEC_interp=interpol(SPEC[*,idx_model], wl, wl_rebin)
+   SPEC_interp=interpol(SPEC[*,idx_model], wl, wl_rebin, /spline)
+
  
  
- 
-   err_arr=fltarr(n_elements(wl_rebin))+err
-   ;mean_flx_arr=fltarr(n_elements(wl[idx_lim]))+mean_flx
-   ;pp1=plot( wl_rebin,SPEC_interp)
-   ;pp2=plot(wl[idx_lim], mean_flx_arr,color='red', /overplot)
-   ;pp3=plot(wl[idx_lim], err_arr, color='blue', /overplot)
-   d4000n_arr=d4000_index(wl_rebin, SPEC_interp, err_arr, narrow=1)
-   HdHg_arr=comp_index(wl_rebin, SPEC_interp, err_arr, 'HdHg')
-   mg2fe_arr=comp_index(wl_rebin, SPEC_interp, err_arr, 'Mg2fe')
-   mgfep_arr=comp_index(wl_rebin, SPEC_interp, err_arr, 'MgFep')
-   lick_hb_arr=line_index(wl_rebin, SPEC_interp, err_arr, indexpars[where(strcmp(indexpars.index,'Lick_Hb'))])
+   err20_arr=fltarr(n_elements(wl_rebin))+err20
+  ; stop
    
-   d4000n=d4000n_arr[0]
-   err_d4000n=d4000n_arr[1]
-   hdhg=HdHg_arr[0]
-   err_hdhg=HdHg_arr[1]
-   mg2fe=mg2fe_arr[0]
-   err_mg2fe=mg2fe_arr[1]
-   mgfep=mgfep_arr[0]
-   err_mgfep=mgfep_arr[1]
-   lick_hb=lick_hb_arr[0]
-   err_lick_hb=lick_hb_arr[1]
    
-   data_table[idx_model].(col_d4000)=d4000n
-   data_table[idx_model].(col_d4000_err)=err_d4000n
-   data_table[idx_model].(col_HdHg)=hdhg
-   data_table[idx_model].(col_hdhg_err)=err_hdhg
-   data_table[idx_model].(col_mg2fe)=mg2fe
-   data_table[idx_model].(col_mg2fe_err)=err_mg2fe
-   data_table[idx_model].(col_mgfep)=mgfep
-   data_table[idx_model].(col_mgfep_err)=err_mgfep
-   data_table[idx_model].(col_lick_hb)=lick_hb
-   data_table[idx_model].(col_lick_hb_err)=err_lick_hb
-  ;stop 
+   for k=1, Nidx_names-1 do begin
+     if (where(strcmp(linenames, idx_names[k], /fold_case)) ne -1) then begin
+        col_num20=(where(strcmp(idx_names[k]+'20', colnames, /fold_case)))
+        col_numerr20=(where(strcmp('err20_'+idx_names[k], colnames, /fold_case)))
+        ;tmp=(idx_table[idx_model].(k))[0]
+        tmp_arr=line_index(wl_rebin, SPEC_interp, err20_arr, indexpars[where(strcmp(indexpars.index, idx_names[k], /fold_case))])
+        data_table[idx_model].(col_num20)=tmp_arr[0]
+        data_table[idx_model].(col_numerr20)=tmp_arr[1]
+     endif
+     
+     if (where(strcmp(idx_names[k], 'd4000n', /fold_case)) ne -1) then begin
+        col_num20=(where(strcmp(idx_names[k]+'20', colnames, /fold_case)))
+        col_numerr20=(where(strcmp('err20_'+idx_names[k], colnames, /fold_case)))
+        tmp_arr=d4000_index(wl_rebin, SPEC_interp, err20_arr, narrow=1)
+        data_table[idx_model].(col_num20)=tmp_arr[0]
+        data_table[idx_model].(col_numerr20)=tmp_arr[1]
+     endif
+     
+     if (where(strcmp(idx_names[k], 'd4000', /fold_case)) ne -1) then begin
+       col_num20=(where(strcmp(idx_names[k]+'20', colnames, /fold_case)))
+       col_numerr20=(where(strcmp('err20_'+idx_names[k], colnames, /fold_case)))
+       tmp_arr=d4000_index(wl_rebin, SPEC_interp, err20_arr, narrow=0)
+       data_table[idx_model].(col_num20)=tmp_arr[0]
+       data_table[idx_model].(col_numerr20)=tmp_arr[1]
+     endif 
+     
+     if ((where(strcmp(linenames, idx_names[k], /fold_case)) eq -1) and (where(strcmp(idx_names[k], 'd4000n', /fold_case)) eq -1) and $
+          (where(strcmp(idx_names[k], 'd4000', /fold_case)) eq -1)) then begin
+       col_num20=(where(strcmp(idx_names[k]+'20', colnames, /fold_case)))
+       col_numerr20=(where(strcmp('err20_'+idx_names[k], colnames, /fold_case)))
+       tmp_arr=comp_index(wl_rebin, SPEC_interp, err20_arr, idx_names[k])
+       data_table[idx_model].(col_num20)=tmp_arr[0]
+       data_table[idx_model].(col_numerr20)=tmp_arr[1]
+     endif
+     
+   endfor
+  stop
+   
+  stop 
   endfor
+ 
+ mwrfits, data_table, idx_werr_file, /create
  stop
  endfor 
+ 
  ;stop
  
-end 
+end
+
+pro check_interp
+  
+  common idxinfo
+  read_idxinfo
+  
+  fits_dir='~/Desktop/TESI/models/sandage_dcomb/'
+  prefix_file='sandage_varZ_v4.1eq_spec_'
+  suffix_spec='dcomb090n_'
+  suffix_idx='dcomb090n_idx_'
+  suffix_idx_werr='dcomb090n_idx_werr'
+  end_file='.fits'
+  sndg_num=1
+  tot_file=n_elements(sndg_num)
+
+  SNR=20.0
+  dwl=1.0
+  idx_model=0
+  spec_file=fits_dir+prefix_file+suffix_spec+string(sndg_num, format='(I3.3)')+end_file
+  idx_file=fits_dir+prefix_file+suffix_idx+string(sndg_num, format='(I3.3)')+end_file
+  idx_werr_file=fits_dir+prefix_file+suffix_idx_werr+string(sndg_num, format='(I3.3)')+end_file
+  
+  idx_table=mrdfits(idx_file, 1)
+  d4000n_0=(idx_table[idx_model].d4000n)[0]
+  hdhg_0=(idx_table[idx_model].hdhg)[0]
+  mg2fe_0=(idx_table[idx_model].mg2fe)[0]
+  mgfep_0=(idx_table[idx_model].mg2fe_prime)[0]
+  SPEC=mrdfits(spec_file, 1)
+  wl=mrdfits(spec_file, 0)
+  ;n_model=(size(SPEC))[2]
+  
+  idx_lim=where(wl gt 3700. and wl lt 5600., nlim_wl)
+  wl_maxmin=[wl[idx_lim[0]], wl[idx_lim[-1]]]
+  n_wlreb=fix((wl_maxmin[1]-wl_maxmin[0])/dwl)+1
+  wl_rebin=findgen(n_wlreb)*dwl+wl_maxmin[0]
+
+  SPEC_interp_l=interpol(SPEC[*,idx_model], wl, wl_rebin)
+  SPEC_interp_s=interpol(SPEC[*,idx_model], wl, wl_rebin, /spline)
+  flx=flux_integral(wl, SPEC[*,idx_model], wl_maxmin)
+  mean_flx=flx/(wl_maxmin[1]-wl_maxmin[0])
+  err=mean_flx/SNR
+
+  
+   err_arr=fltarr(n_elements(wl_rebin))+err
+   
+   d4000n_arr_l=d4000_index(wl_rebin, SPEC_interp_l, err_arr, narrow=1)
+   HdHg_arr_l=comp_index(wl_rebin, SPEC_interp_l, err_arr, 'HdHg')
+   mg2fe_arr_l=comp_index(wl_rebin, SPEC_interp_l, err_arr, 'Mg2fe')
+   mgfep_arr_l=comp_index(wl_rebin, SPEC_interp_l, err_arr, 'MgFep')
+   lick_hb_arr_l=line_index(wl_rebin, SPEC_interp_l, err_arr, indexpars[where(strcmp(indexpars.index,'Lick_Hb'))])
+   
+   d4000n_arr_s=d4000_index(wl_rebin, SPEC_interp_s, err_arr, narrow=1)
+   HdHg_arr_s=comp_index(wl_rebin, SPEC_interp_s, err_arr, 'HdHg')
+   mg2fe_arr_s=comp_index(wl_rebin, SPEC_interp_s, err_arr, 'Mg2fe')
+   mgfep_arr_s=comp_index(wl_rebin, SPEC_interp_s, err_arr, 'MgFep')
+   lick_hb_arr_s=line_index(wl_rebin, SPEC_interp_s, err_arr, indexpars[where(strcmp(indexpars.index,'Lick_Hb'))])
+
+   d4000n_l=d4000n_arr_l[0]
+   err_d4000n_l=d4000n_arr_l[1]
+   hdhg_l=HdHg_arr_l[0]
+   err_hdhg_l=HdHg_arr_l[1]
+   mg2fe_l=mg2fe_arr_l[0]
+   err_mg2fe_l=mg2fe_arr_l[1]
+   mgfep_l=mgfep_arr_l[0]
+   err_mgfep_l=mgfep_arr_l[1]
+   lick_hb_l=lick_hb_arr_l[0]
+   err_lick_hb_l=lick_hb_arr_l[1]
+   
+   d4000n_s=d4000n_arr_s[0]
+   err_d4000n_s=d4000n_arr_s[1]
+   hdhg_s=HdHg_arr_s[0]
+   err_hdhg_s=HdHg_arr_s[1]
+   mg2fe_s=mg2fe_arr_s[0]
+   err_mg2fe_s=mg2fe_arr_s[1]
+   mgfep_s=mgfep_arr_s[0]
+   err_mgfep_s=mgfep_arr_s[1]
+   lick_hb_s=lick_hb_arr_s[0]
+   err_lick_hb_s=lick_hb_arr_s[1]
+   
+   stop
+   end
+ 
