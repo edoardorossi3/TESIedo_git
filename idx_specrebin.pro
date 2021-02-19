@@ -8,13 +8,13 @@ pro idx_specrebin
  suffix_spec='dcomb_'
  suffix_idx='dcomb_idx_'
  suffix_idx_werr='dcomb_idx_s_werr'
- end_file='.fits'
+ file_ext='.fits'
  sndg_num=indgen(2)
  tot_file=n_elements(sndg_num)
  
  SNR20=20.0
  dwl=1.0
- data_row=create_struct('IDX', !values.f_nan)
+ data_row=create_struct('IDX', 0L) ; !values.f_nan is a float
 
  ;for i=1, tot_file-1 do begin
   i=1
@@ -26,9 +26,9 @@ pro idx_specrebin
   ;                       'MgFep_0', !values.f_nan, 'MgFep_200', !values.f_nan, 'MgFep20', !values.f_nan, 'err20_MgFep', !values.f_nan)
   ;data_table=replicate(data_row, 12500)
 
-  spec_file=fits_dir+prefix_file+suffix_spec+string(sndg_num[i], format='(I3.3)')+end_file
-  idx_file=fits_dir+prefix_file+suffix_idx+string(sndg_num[i], format='(I3.3)')+end_file
-  idx_werr_file=fits_dir+prefix_file+suffix_idx_werr+string(sndg_num[i], format='(I3.3)')+end_file
+  spec_file=fits_dir+prefix_file+suffix_spec+string(sndg_num[i], format='(I3.3)')+file_ext
+  idx_file=fits_dir+prefix_file+suffix_idx+string(sndg_num[i], format='(I3.3)')+file_ext
+  idx_werr_file=fits_dir+prefix_file+suffix_idx_werr+string(sndg_num[i], format='(I3.3)')+file_ext
   
   idx_table=mrdfits(idx_file,1)
   SPEC=mrdfits(spec_file, 1)
@@ -152,16 +152,16 @@ pro check_interp
   suffix_spec='dcomb090n_'
   suffix_idx='dcomb090n_idx_'
   suffix_idx_werr='dcomb090n_idx_werr'
-  end_file='.fits'
+  file_ext='.fits'
   sndg_num=1
   tot_file=n_elements(sndg_num)
 
   SNR=20.0
   dwl=1.0
   idx_model=0
-  spec_file=fits_dir+prefix_file+suffix_spec+string(sndg_num, format='(I3.3)')+end_file
-  idx_file=fits_dir+prefix_file+suffix_idx+string(sndg_num, format='(I3.3)')+end_file
-  idx_werr_file=fits_dir+prefix_file+suffix_idx_werr+string(sndg_num, format='(I3.3)')+end_file
+  spec_file=fits_dir+prefix_file+suffix_spec+string(sndg_num, format='(I3.3)')+file_ext
+  idx_file=fits_dir+prefix_file+suffix_idx+string(sndg_num, format='(I3.3)')+file_ext
+  idx_werr_file=fits_dir+prefix_file+suffix_idx_werr+string(sndg_num, format='(I3.3)')+file_ext
   
   idx_table=mrdfits(idx_file, 1)
   d4000n_0=(idx_table[idx_model].d4000n)[0]
