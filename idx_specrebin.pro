@@ -115,9 +115,12 @@ pro idx_specrebin
        data_table[idx_model].(col_num20)=tmp_arr[0]
        data_table[idx_model].(col_numerr20)=tmp_arr[1]
      endif 
+   
      ;stop
-     if ((where(strcmp(linenames, idx_names[k], /fold_case)) eq -1) and (where(strcmp(idx_names[k], 'd4000n', /fold_case)) eq -1) and $
-          (where(strcmp(idx_names[k], 'd4000', /fold_case)) eq -1)) then begin
+    ; if ((where(strcmp(linenames, idx_names[k], /fold_case)) eq -1) and (where(strcmp(idx_names[k], 'd4000n', /fold_case)) eq -1) and $
+     ;     (where(strcmp(idx_names[k], 'd4000', /fold_case)) eq -1)) then begin
+     if  ((where(strcmp(idx_names[k],'MgFe_prime',  /fold_case)) ne -1) or (where(strcmp(idx_names[k], 'mg2fe', /fold_case)) ne -1) or $
+            (where(strcmp(idx_names[k], 'HdHg', /fold_case)) ne -1)) then begin
        col_num20=(where(strcmp(idx_names[k]+'20', colnames, /fold_case)))
        col_numerr20=(where(strcmp('err20_'+idx_names[k], colnames, /fold_case)))
        tmp_arr=comp_index(wl_rebin, SPEC_interp, err20_arr, idx_names[k])
