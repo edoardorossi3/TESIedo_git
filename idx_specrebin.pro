@@ -129,13 +129,13 @@ pro idx_specrebin
      endif
      
    endfor
-  stop
+  ;stop
    
-  stop 
+  ;stop 
   endfor
  
  mwrfits, data_table, idx_werr_file, /create
- stop
+ ;stop
  ;endfor 
  
  ;stop
