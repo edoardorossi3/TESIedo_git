@@ -107,11 +107,11 @@ pro index_errors,SNR
         data_table[idx_model].(col_num_err)=_index[1]
       endfor
     endfor
-    stop
+    ;stop
     
     ; TODO: take header from idx_table file and modify to update column info and add extra info (eg, spline interpolation, SNR etc)
     mwrfits, data_table, idx_werr_file, /create
-    stop
+    ;stop
   endfor
 
   ;stop
