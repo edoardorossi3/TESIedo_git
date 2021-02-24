@@ -111,10 +111,24 @@ pro index_errors,SNR
     
     ; TODO: take header from idx_table file and modify to update column info and add extra info (eg, spline interpolation, SNR etc)
     mwrfits, data_table, idx_werr_file, /create
-    ;stop
-  endfor
+    hdr=HEADFITS(idx_werr_file, exten=1)
+    sxaddpar, hdr, 'COMMENT', '_ERR_SNR'+string(fix(SNR),format='(I03)')+': SNR='+string(fix(SNR),format='(F5.1)')+' per '+string(dwl_rsmp,format='(F3.1)')+' AA',after='TFIELDS'
+    sxaddpar, hdr, 'COMMENT', '_SIGMA0_RSMP: 0 velocity dispersion, resmapled at '+string(dwl_rsmp,format='(F3.1)')+' AA',after='TFIELDS'
+    sxaddpar, hdr, 'COMMENT', '_SIGMA200: 200 km/s velocity dispersion from SEDLIBRARY',after='TFIELDS'
+    sxaddpar, hdr, 'COMMENT', '_SIGMA0: 0 velocity dispersion from SEDLIBRARY',after='TFIELDS'
+    sxaddpar, hdr, 'RSMP_TYPE', 'SPLINE', 'Type of resampling interpolant' ,after='TFIELDS'
 
+    sxaddpar, hdr, 'SNR', SNR, 'SNR per '+string(dwl_rsmp,format='(F3.1)')+' AA for error computation' ,after='TFIELDS'
+    sxaddpar, hdr, 'DLAMBDA_RSMP', dwl_rsmp, 'Resampled pixel size in AA for error computation',after='TFIELDS'
+    sxaddpar, hdr, 'SPEC_ORIG', file_prefix+spec_suffix+string(i_chunk, format='(I03)')+file_ext, 'Orig. SEDLIBRARY spec',after='TFIELDS'
+    sxaddpar, hdr, 'IDX_ORIG', file_prefix+idx_suffix+string(i_chunk, format='(I03)')+file_ext, 'Orig. SEDLIBRARY indxs',after='TFIELDS'
+    modfits, idx_werr_file, 0, hdr, exten=1
+    
   ;stop
+  endfor
+  
+  
+  stop
 
 end
 
