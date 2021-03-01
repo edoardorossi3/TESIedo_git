@@ -8,7 +8,8 @@ pro pert_idx
 prefix_file='sandage_varZ_v4.1eq_spec_dcomb_'
 model_dir=getenv('SEDLIBRARIES_DIR')+'/Sandage_varZ_v4.1eq_bc03MILES_ChFall/'
 
-err_mag=0.05
+err_mag_005=0.05
+err_mag_003=0.03
 Flux_calib_err=0.03 ;sistematic error on d4000 due to flux calibration
 SNR=20.
 seed=-10
@@ -45,19 +46,22 @@ for i_chunk=1, n_chunks do begin
     data_row=create_struct(data_row, idx_names[i_idx]+'_SIGMA200_PERT', !values.f_nan, idx_names[i_idx]+'_ERR_SNR'+string(fix(SNR),format='(I03)'), !values.f_nan)
   endfor
   ;Add ugriz ab mag
-  data_row=create_struct(data_row, 'ABMAG_u_pert', !values.f_nan, 'ABMAG_g_pert', !values.f_nan, 'ABMAG_r_pert', !values.f_nan, 'ABMAG_i_pert', !values.f_nan, 'ABMAG_z_pert', !values.f_nan, 'ERR_MAG', err_mag)
+  data_row=create_struct(data_row, 'ABMAG_u_pert', !values.f_nan, 'ERR_MAG_U', err_mag_005, 'ABMAG_g_pert', !values.f_nan, 'ERR_MAG_G', err_mag_003,$
+                          'ABMAG_r_pert', !values.f_nan, 'ERR_MAG_R', err_mag_003, 'ABMAG_i_pert',$
+                          !values.f_nan, 'ERR_MAG_I', err_mag_003, 'ABMAG_z_pert', !values.f_nan, 'ERR_MAG_Z', err_mag_005)
   
   
   data_table=replicate(data_row, n_models)
   data_table.idx=idx_table.idx
   
-  RND_mag=randomn(seed, n_models)*err_mag
+  RND_mag_005=randomn(seed, n_models)*err_mag_005
+  RND_mag_003=randomn(seed, n_models)*err_mag_003
 
-  data_table.abmag_u_pert=phys_table.abmag[0]+RND_mag
-  data_table.abmag_g_pert=phys_table.abmag[1]+RND_mag
-  data_table.abmag_r_pert=phys_table.abmag[2]+RND_mag
-  data_table.abmag_i_pert=phys_table.abmag[3]+RND_mag
-  data_table.abmag_z_pert=phys_table.abmag[4]+RND_mag
+  data_table.abmag_u_pert=phys_table.abmag[0]+RND_mag_005
+  data_table.abmag_g_pert=phys_table.abmag[1]+RND_mag_003
+  data_table.abmag_r_pert=phys_table.abmag[2]+RND_mag_003
+  data_table.abmag_i_pert=phys_table.abmag[3]+RND_mag_003
+  data_table.abmag_z_pert=phys_table.abmag[4]+RND_mag_005
 
   ;stop
   data_names=(tag_names(data_table))
