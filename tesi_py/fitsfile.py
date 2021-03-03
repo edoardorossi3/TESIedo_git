@@ -11,8 +11,9 @@ import astropy.io.fits as fits
 #import matplotlib.pyplot as plt
 import numpy as np
 
-hdul_th=fits.open('tesi_par.fits')  #t_f parameters
-hdul2=fits.open('sandage_varZ_v4.1eq.fits')   #t_obs, tau, metallicity, bursts
+#hdul_th=fits.open('tesi_par.fits')  #t_f parameters
+hdul_th=fits.open('/home/edoardo/Desktop/TESI/t_f_analitic.fits')
+hdul2=fits.open('/home/edoardo/Desktop/TESI/sandage_varZ_v4.1eq.fits')   #t_obs, tau, metallicity, bursts
 
 log_tobs=hdul2[1].data['LOGTFORM']
 
@@ -20,7 +21,8 @@ t10=hdul_th[1].data['t10']
 age10=np.power(10,log_tobs)-t10
 t90=hdul_th[1].data['t90']
 age90=np.power(10,log_tobs)-t90
-age50=hdul_th[1].data['age50']
+t50=hdul_th[1].data['t50']
+age50=np.power(10, log_tobs)-t50
 t25=hdul_th[1].data['t25']
 age25=np.power(10,log_tobs)-t25
 t75=hdul_th[1].data['t75']
@@ -33,7 +35,7 @@ for i in range (1, 41):
     c4s=fits.Column(name='age75', array=age75[12500*(i-1):12500*i], format='E',unit='yr')
     c5s=fits.Column(name='age90', array=age90[12500*(i-1):12500*i], format='E',unit='yr')
     
-    sndg_file='/home/edoardo/Scrivania/TESI/sandage_dcomb/sandage_varZ_v4.1eq_spec_dcomb090n_{:03d}_physpar.fits'
+    sndg_file='/home/edoardo/Desktop/TESI/models/Sandage_varZ_v4.1eq_bc03MILES_ChFall/sandage_varZ_v4.1eq_spec_dcomb_{:03d}_physpar.fits'
     #hdul=fits.open('par_age_dcomb001.fits')
     hdul1=fits.open(sndg_file.format(i))
     
@@ -46,9 +48,9 @@ for i in range (1, 41):
     
     col_tot=hdul1[1].columns + c1s+c2s+c3s+c4s+c5s
     
-    new_file='/home/edoardo/Scrivania/TESI/sandage_dcomb_wagef/sandage_varZ_v4.1eq_spec_dcomb090n_{:03d}_physpar_wagef.fits'
+    new_file='/home/edoardo/Desktop/TESI/models/Sandage_varZ_v4.1eq_bc03MILES_ChFall/sandage_varZ_v4.1eq_spec_dcomb_{:03d}_physpar_wagef.fits'
     hs=fits.BinTableHDU.from_columns(col_tot, header=hdul1[1].header)
-    hs.writeto(new_file.format(i))
+    hs.writeto(new_file.format(i), overwrite=True)
     
     #hdul.close()
     hdul1.close()
