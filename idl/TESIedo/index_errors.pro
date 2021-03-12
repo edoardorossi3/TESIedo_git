@@ -30,7 +30,7 @@ pro index_errors,SNR
 
     spec_file=models_dir+file_prefix+spec_suffix+string(i_chunk, format='(I03)')+file_ext  ;; preferibile I03 piuttosto che I3.3  (se e' intero non ha decimali)
     idx_file=models_dir+file_prefix+idx_suffix+string(i_chunk, format='(I03)')+file_ext
-    idx_werr_file=models_dir+file_prefix+idx_suffix_werr+string(i_chunk, format='(I03)')+file_ext
+    idx_werr_file=models_dir+'mock_ER_001/'+file_prefix+idx_suffix_werr+string(i_chunk, format='(I03)')+file_ext
 
     wl=mrdfits(spec_file, 0)
     SPEC=mrdfits(spec_file, 1) & n_models=(size(SPEC))[2] ; keep information close in space...
@@ -122,7 +122,12 @@ pro index_errors,SNR
     sxaddpar, hdr, 'DLAMBDA_RSMP', dwl_rsmp, 'Resampled pixel size in AA for error computation',after='TFIELDS'
     sxaddpar, hdr, 'SPEC_ORIG', file_prefix+spec_suffix+string(i_chunk, format='(I03)')+file_ext, 'Orig. SEDLIBRARY spec',after='TFIELDS'
     sxaddpar, hdr, 'IDX_ORIG', file_prefix+idx_suffix+string(i_chunk, format='(I03)')+file_ext, 'Orig. SEDLIBRARY indxs',after='TFIELDS'
+    sxaddpar, hdr, 'SNR_LAM0', SNR_range[0], 'lower wavelength boundary for SNR definition',after='TFIELDS'
+    sxaddpar, hdr, 'SNR_LAM1', SNR_range[1], 'upper wavelength boundary for SNR definition',after='TFIELDS'
     modfits, idx_werr_file, 0, hdr, exten=1
+    
+    ;SNR_LAM0= xxxx / lower wavelength boundary for SNR definition
+    ;SNR_LAM1= yyyy / upper wavelength boundary for SNR definition
     
   ;stop
   endfor

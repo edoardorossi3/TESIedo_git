@@ -14,15 +14,15 @@ pro test_BaStA_fit
   pdf_init, '/home/edoardo/BaStA/idl/BaStA/pdf_parfiles/pdf_modpars_stelpop_SanV4.1eqMILES_ChFall_test_agef.par'
 
   
-  redshift=0.005
-  vdisp=175. & sigma_instr=sigma_mod
+  redshift=0.0 ;lavora 0
+  vdisp=200. & sigma_instr=sigma_mod ;lavora a 200
   mag_mod_redshift_interpol,redshift
   indx_mod_vdisp_interpol,vdisp
   
   ;; read mock table
   ;mock_fname='/Users/zibetti/ownCloud/Tesi_ERossi/models/sandage_varZ_v4.1eq_spec_dcomb_perterr_001.fits'
   mock_fname=getenv('SEDLIBRARIES_DIR')+'/Sandage_varZ_v4.1eq_bc03MILES_ChFall/sandage_varZ_v4.1eq_spec_dcomb_perterr_001.fits'
-  models_dir=getenv('SEDLIBRARIES_DIR')+'/Sandage_varZ_v4.1eq_bc03MILES_ChFall/mock/'
+  models_dir=getenv('SEDLIBRARIES_DIR')+'/Sandage_varZ_v4.1eq_bc03MILES_ChFall/mock_ER_001/'
   mock_table=mrdfits(mock_fname,1)
   ;stop
   ;idx_names=['D4000n',  'LICK_Hb', 'HDHG', 'MGFE_PRIME','MG2FE'] & n_idx=n_elements(idx_names)
@@ -32,7 +32,7 @@ pro test_BaStA_fit
   
  
   mock_names=tag_names(mock_table)
-  n_mock=10;n_elements(mock_table[*])
+  n_mock=n_elements(mock_table[*])
   n_par=n_elements(phpars_to_fit)
   
  
@@ -69,12 +69,15 @@ pro test_BaStA_fit
     for i_par=0, n_par-1 do begin
       tables.(i_par)[idx_mock]=results.(i_par)
     endfor
+    
+    
   endfor  
   ;stop
   for i_par=0, n_par-1 do begin
-    filename=models_dir+'mock_file_'+phpars_to_fit[i_par]+'.fits'
-    mwrfits, tables.(i_par), filename, /create
+    filename_ph=models_dir+'mock_file_'+phpars_to_fit[i_par]+'.fits'
+    mwrfits, tables.(i_par), filename_ph, /create
   endfor
+  
   
   
   stop

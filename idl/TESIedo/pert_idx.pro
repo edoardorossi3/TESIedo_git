@@ -23,10 +23,10 @@ for i_chunk=1, n_chunks do begin
   end_perterr_file='perterr_'+string(i_chunk, format='(I03)')+'.fits'
   end_physpar_file=string(i_chunk, format='(I03)')+'_physpar'+'.fits'
   
-  err_file=model_dir+prefix_file+end_err_file
+  err_file=model_dir+'mock_ER_001/'+prefix_file+end_err_file
   idx_file=model_dir+prefix_file+end_idx_file
   spec_file=model_dir+prefix_file+end_spec_file
-  perterr_file=model_dir+prefix_file+end_perterr_file
+  perterr_file=model_dir+'mock_ER_001/'+prefix_file+end_perterr_file
   physpar_file=model_dir+prefix_file+end_physpar_file
   
   ;stop
