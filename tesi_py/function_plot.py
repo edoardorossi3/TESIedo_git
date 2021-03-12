@@ -16,40 +16,6 @@ def rms_1684(z):
     r_1684=(perc_84-perc_16)/2.0
     return r_1684
 
-def density_map(x,y,par,statistic,n_size_par,title=[''], x_label='', y_label='',vmin=[], vmax=[], nx=1, ny=1, figsize=(5,5)):
-    
-    n_stat=np.size(statistic)
-    
-    
-    if (nx==1 & ny==1):
-        
-        stat_par=stats.binned_statistic_2d(x, y, par[0:n_size_par], bins=50, statistic=statistic[0])
-        
-        y_g,x_g=np.meshgrid(stat_par.y_edge,stat_par.x_edge)
-        fig, axs=plt.subplots(figsize=figsize)
-        im=axs.pcolormesh(x_g,y_g,(stat_par.statistic),cmap=cm.rainbow, vmin=vmin[0], vmax=vmax[0])
-        fig.colorbar(im, ax=axs)
-        axs.set_title(title[0])
-        axs.set_xlabel(x_label)
-        axs.set_ylabel(y_label)
-        
-    if (nx*ny != n_stat):
-        print('something is wrong! Take a look on the number of the density maps!')
-        
-    if(nx!=0 & ny!=0 & nx*ny==n_stat):
-        fig, axs=plt.subplots(nx, ny, figsize=figsize)
-        
-        for i_x in range(0, nx):
-            for i_y in range(0, ny):    
-                for i_stat in range(0,n_stat):
-                    _stat_par=stats.binned_statistic_2d(x,y,par[(i_stat*n_size_par):(n_size_par+i_stat*n_size_par)])
-                    _y_g, _x_g=np.meshgrid(_stat_par.y_edge, _stat_par.x_edge)
-                    _im= axs[i_x,i_y].pcolormesh(_x_g,_y_g,(_stat_par.statistic),cmap=cm.rainbow, vmin=vmin[i_stat], vmax=vmax[i_stat])
-                    fig.colorbar(_im, ax=axs[i_x,i_y])
-                    axs[i_x, i_y].set_title(title[i_stat])
-                axs[nx-1, i_y].set_ylabel(y_label)
-            axs[i_x, ny-1].set_xlabel(x_label)
-
 #density_map_5p is a thesis format...
 
 def density_map_5p(x,y,par,mock_par,mock_err, par_name='', x_label='', y_label='', vmin=[], vmax=[], nx=3, ny=2, figsize=(5,5)):
@@ -107,3 +73,28 @@ def density_map_5p(x,y,par,mock_par,mock_err, par_name='', x_label='', y_label='
     axs1[1,0].set_ylabel(par_name+'_mock')
     
     return fig1
+
+
+def diff_density_map(x,y,par1,par2,statistic,name1='',name2='',xlabel='',ylabel='',figsize=(10,25),vmin=None,vmax=None):
+    stat_diffpar=stats.binned_statistic_2d(x,y,par1-par2,bins=50,statistic=statistic)
+    
+    y_g,x_g=np.meshgrid(stat_diffpar.y_edge, stat_diffpar.x_edge)
+    
+    fig, ax=plt.subplots(figsize=figsize)
+    im=ax.pcolormesh(x_g, y_g, stat_diffpar.statistic,cmap=cm.Spectral,vmin=vmin, vmax=vmax)
+    fig.colorbar(im, ax=ax)
+    ax.set_facecolor('grey')
+    ax.set_title(name1+'-'+name2)
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    
+    return fig
+
+
+
+
+
+
+
+
+
