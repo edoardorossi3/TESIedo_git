@@ -21,7 +21,7 @@ pro test_BaStA_fit
   
   ;; read mock table
   ;mock_fname='/Users/zibetti/ownCloud/Tesi_ERossi/models/sandage_varZ_v4.1eq_spec_dcomb_perterr_001.fits'
-  mock_fname=getenv('SEDLIBRARIES_DIR')+'/Sandage_varZ_v4.1eq_bc03MILES_ChFall/sandage_varZ_v4.1eq_spec_dcomb_perterr_001.fits'
+  mock_fname=getenv('SEDLIBRARIES_DIR')+'/Sandage_varZ_v4.1eq_bc03MILES_ChFall/mock_ER_001/sandage_varZ_v4.1eq_spec_dcomb_perterr_001.fits'
   models_dir=getenv('SEDLIBRARIES_DIR')+'/Sandage_varZ_v4.1eq_bc03MILES_ChFall/mock_ER_001/'
   mock_table=mrdfits(mock_fname,1)
   ;stop
