@@ -151,10 +151,20 @@ def diff_density_map(x,y,par1,par2,statistic,name1='',name2='',xlabel='',ylabel=
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
     
-    return fig
+    return fig, ax, stat_diffpar.statistic
 
-def prior_comp(par_binned, par, mock_par, n_lim=3, figsize=(25,15), limits=[None, None, None]):
+def prior_comp(par_binned, par, mock_par, n_lim=3, figsize=(15,10), limits=[None, None, None],name_binned_par=''):
+    
+    idx_fin=np.isfinite(par*mock_par)
+    #par=par[idx_fin]
+    #mock_par=mock_par[idx_fin]
+    idx_nofin= ~idx_fin
+    par[idx_nofin]=6.0
+    mock_par[idx_nofin]=6.0
+    print('total deleted (no finite values):', np.sum(idx_nofin))
+    
     fig, axs=plt.subplots(2,2,figsize=figsize)
+    
     
     median=np.median(par)
     istpar_tot=np.histogram(par,bins=50)
@@ -175,6 +185,7 @@ def prior_comp(par_binned, par, mock_par, n_lim=3, figsize=(25,15), limits=[None
     axs[0,0].step(istmock[1], frac_mock, label='mock')
     axs[0,0].legend(loc='upper right')
     axs[0,0].plot([median, median], axs[0,0].get_ylim())
+    axs[0,0].set_title(name_binned_par+'<'+str(limits[0]))  
     
     _i=np.argwhere(np.logical_and((par_binned<limits[1]),(par_binned>limits[0])))
     _idx=_i.reshape(np.shape(_i)[0])
@@ -189,6 +200,7 @@ def prior_comp(par_binned, par, mock_par, n_lim=3, figsize=(25,15), limits=[None
     axs[0,1].step(istmock[1], frac_mock,label='mock')
     axs[0,1].legend(loc='upper right')
     axs[0,1].plot([median, median], axs[0,1].get_ylim())
+    axs[0,1].set_title(str(limits[0])+'<'+name_binned_par+'<'+str(limits[1]))
 
     
     _i=np.argwhere( np.logical_and((par_binned<limits[2]),(par_binned>limits[1])) )
@@ -204,6 +216,7 @@ def prior_comp(par_binned, par, mock_par, n_lim=3, figsize=(25,15), limits=[None
     axs[1,0].step(istmock[1], frac_mock,label='mock')
     axs[1,0].legend(loc='upper right')
     axs[1,0].plot([median, median], axs[1,0].get_ylim())
+    axs[1,0].set_title(str(limits[1])+'<'+name_binned_par+'<'+str(limits[2]))
 
     
     _i=np.argwhere(par_binned>limits[2])
@@ -219,37 +232,280 @@ def prior_comp(par_binned, par, mock_par, n_lim=3, figsize=(25,15), limits=[None
     axs[1,1].step(istmock[1], frac_mock,label='mock')
     axs[1,1].legend(loc='upper right')
     axs[1,1].plot([median, median], axs[1,1].get_ylim())
+    axs[1,1].set_title(name_binned_par+'>'+str(limits[2]))
 
 
     return fig
 
-def scatter_comp(par_binned, par, mock_par, limits=[None, None, None], figsize=(25,15)):
+def scatter_comp(par_binned, par, mock_par, limits=[None, None, None], figsize=(15,10), name_binned_par=''):
+    
+    idx_fin=np.isfinite(par*mock_par)
+    #par=par[idx_fin]
+    #mock_par=mock_par[idx_fin]
+    idx_nofin= ~idx_fin
+    par[idx_nofin]=6.0
+    mock_par[idx_nofin]=6.0
+    print('total deleted (no finite values):', np.sum(idx_nofin))
+    
     fig, axs=plt.subplots(2,2,figsize=figsize)
     
     _i=np.argwhere(par_binned<limits[0])
     _idx=_i.reshape(np.shape(_i)[0])
     axs[0,0].scatter(par[_idx], mock_par[_idx], s=0.1)
-    axs[0,0].plot([5.8,10.5], [5.8,10.5])
+    axs[0,0].plot([5.8,10.5], [5.8,10.5], color='red')
+    axs[0,0].set_title(name_binned_par+'<'+str(limits[0]))
 
 
     
     _i=np.argwhere(np.logical_and((par_binned<limits[1]),(par_binned>limits[0])))
     _idx=_i.reshape(np.shape(_i)[0])
     axs[0,1].scatter(par[_idx], mock_par[_idx], s=0.1)
-    axs[0,1].plot([5.8,10.5], [5.8,10.5])
+    axs[0,1].plot([5.8,10.5], [5.8,10.5], color='red')
+    axs[0,1].set_title(str(limits[0])+'<'+name_binned_par+'<'+str(limits[1]))
+
    
     _i=np.argwhere( np.logical_and((par_binned<limits[2]),(par_binned>limits[1])) )
     _idx=_i.reshape(np.shape(_i)[0])
     axs[1,0].scatter(par[_idx], mock_par[_idx], s=0.1)
-    axs[1,0].plot([5.8,10.5], [5.8,10.5])
+    axs[1,0].plot([5.8,10.5], [5.8,10.5], color='red')
+    axs[1,0].set_title(str(limits[1])+'<'+name_binned_par+'<'+str(limits[2]))
+
 
     _i=np.argwhere(par_binned>limits[2])
     _idx=_i.reshape(np.shape(_i)[0])
     axs[1,1].scatter(par[_idx], mock_par[_idx], s=0.8)
-    axs[1,1].plot([5.8,10.5], [5.8,10.5])
+    axs[1,1].plot([5.8,10.5], [5.8,10.5], color='red')
+    axs[1,1].set_title(name_binned_par+'>'+str(limits[2]))
+
     
     axs[0,0].set_ylabel('out')
     axs[1,0].set_ylabel('out')
     axs[1,0].set_xlabel('in')
     axs[1,1].set_xlabel('in')
     return fig
+
+def scatter_norm(par_binned, par, mock_par, limits=[None, None, None], figsize=(15, 10), name_binned_par='', name_par=''):
+    
+    idx_fin=np.isfinite(par*mock_par)
+    #par=par[idx_fin]
+    #mock_par=mock_par[idx_fin]
+    idx_nofin= ~idx_fin
+    par[idx_nofin]=6.0
+    mock_par[idx_nofin]=6.0
+    print('total deleted (no finite values):', np.sum(idx_nofin))
+    
+    fig,axs=plt.subplots(1,2,figsize=figsize)
+    
+    median_tot=np.median(par)
+    median_arr=[0.0]*4
+    mock_median_arr=[0.0]*4
+    
+    _i=np.argwhere(par_binned<limits[0])
+    _idx=_i.reshape(np.shape(_i)[0])
+    median_arr[0]=np.median(par[_idx])
+    mock_median_arr[0]=np.median(mock_par[_idx])
+    _medpar_arr=[median_arr[0]]*np.size(par[_idx])
+    _medmock_arr=[mock_median_arr[0]]*np.size(mock_par[_idx])
+    axs[0].scatter(par[_idx], mock_par[_idx], color='red', s=0.6)
+    axs[1].scatter(par[_idx]-_medpar_arr,mock_par[_idx]-_medmock_arr, color='blue', s=0.6)
+
+    
+    _i=np.argwhere(np.logical_and((par_binned<limits[1]),(par_binned>limits[0])))
+    _idx=_i.reshape(np.shape(_i)[0])
+    median_arr[1]=np.median(par[_idx])
+    mock_median_arr[1]=np.median(mock_par[_idx])
+    _medpar_arr=[median_arr[1]]*np.size(par[_idx])
+    _medmock_arr=[mock_median_arr[1]]*np.size(mock_par[_idx])
+    axs[0].scatter(par[_idx], mock_par[_idx], color='orange',s=0.6)
+    axs[1].scatter(par[_idx]-_medpar_arr,mock_par[_idx]-_medmock_arr, color='blue', s=0.6)
+
+    
+    _i=np.argwhere( np.logical_and((par_binned<limits[2]),(par_binned>limits[1])) )
+    _idx=_i.reshape(np.shape(_i)[0])
+    median_arr[2]=np.median(par[_idx])
+    mock_median_arr[2]=np.median(mock_par[_idx])
+    _medpar_arr=[median_arr[2]]*np.size(par[_idx])
+    _medmock_arr=[mock_median_arr[2]]*np.size(mock_par[_idx])
+    axs[0].scatter(par[_idx], mock_par[_idx], color='violet',s=0.6)
+    axs[1].scatter(par[_idx]-_medpar_arr,mock_par[_idx]-_medmock_arr, color='blue', s=0.6)
+
+
+    _i=np.argwhere(par_binned>limits[2])
+    _idx=_i.reshape(np.shape(_i)[0])
+    median_arr[3]=np.median(par[_idx])
+    mock_median_arr[3]=np.median(mock_par[_idx]) 
+    _medpar_arr=[median_arr[3]]*np.size(par[_idx])
+    _medmock_arr=[mock_median_arr[3]]*np.size(mock_par[_idx])
+    axs[0].scatter(par[_idx], mock_par[_idx], color='blue',s=0.6)
+    axs[1].scatter(par[_idx]-_medpar_arr,mock_par[_idx]-_medmock_arr, color='blue', s=0.6)
+
+
+    #axs.scatter(par, mock_par, s=0.8)
+    axs[0].scatter(median_arr[0], mock_median_arr[0], color='red',s=100, marker="X", label=name_binned_par+'<'+str(limits[0]))
+    axs[0].scatter(median_arr[1], mock_median_arr[1], color='orange',s=100, marker="X", label=str(limits[0])+'<'+name_binned_par+'<'+str(limits[1]))    
+    axs[0].scatter(median_arr[2], mock_median_arr[2], color='violet',s=100, marker="X", label=str(limits[1])+'<'+name_binned_par+'<'+str(limits[2]))
+    axs[0].scatter(median_arr[3], mock_median_arr[3], color='blue',s=100, marker="X", label=name_binned_par+'>'+str(limits[2]))
+    axs[0].plot([median_tot, median_tot], axs[0].get_ylim(), color='red')
+    axs[1].plot([0.0, 0.0], axs[1].get_ylim(), color='red')
+    axs[1].plot(axs[1].get_xlim(), [0.0, 0.0], color='red')
+    axs[1].plot(axs[1].get_xlim(), axs[1].get_xlim(), color='red')
+
+    axs[0].set_xlabel(name_par+'_in')
+    axs[0].set_ylabel(name_par+'_out')
+    axs[0].legend(loc='upper left')
+    axs[1].set_xlabel(name_par+'_in-median')
+    axs[1].set_ylabel(name_par+'_out-median')
+    
+def idx_resol(par, idx_1, idx_2, idx_3, idx_4, idx_5,par_name='', idx_name=['','','','',''], figsize=(10,5),s=1):
+    
+    fig, axs=plt.subplots(2, 3, figsize=figsize)
+    
+    axs[0,0].scatter(par, idx_1, s=s)
+    axs[0,1].scatter(par, idx_2, s=s)
+    axs[0,2].scatter(par, idx_3, s=s)
+    axs[1,0].scatter(par, idx_4, s=s)
+    axs[1,1].scatter(par, idx_5, s=s)
+    
+    axs[0,0].set_xlabel(par_name)
+    axs[0,1].set_xlabel(par_name)
+    axs[0,2].set_xlabel(par_name)
+    axs[1,0].set_xlabel(par_name)
+    axs[1,1].set_xlabel(par_name)
+    
+    axs[0,0].set_ylabel(idx_name[0])
+    axs[0,1].set_ylabel(idx_name[1])
+    axs[0,2].set_ylabel(idx_name[2])
+    axs[1,0].set_ylabel(idx_name[3])
+    axs[1,1].set_ylabel(idx_name[4])
+    
+    axs[1,2].axis('off')
+    return fig
+    
+def idx_resol_stat(par,idx_1, idx_2, idx_3, idx_4,  idx_5,par_name='', idx_name=['','','','',''],statistic='median',bins=50, figsize=(10,5),s=1):
+    
+    fig, axs=plt.subplots(2, 3, figsize=figsize)
+    axs[1,2].axis('off')
+    
+    stat_1=stats.binned_statistic(par, idx_1, statistic=statistic, bins=bins)
+    stat_2=stats.binned_statistic(par, idx_2, statistic=statistic, bins=bins)
+    stat_3=stats.binned_statistic(par, idx_3, statistic=statistic, bins=bins)
+    stat_4=stats.binned_statistic(par, idx_4, statistic=statistic, bins=bins)
+    stat_5=stats.binned_statistic(par, idx_5, statistic=statistic, bins=bins)
+    
+    
+    axs[0,0].plot(stat_1.bin_edges[:-1],stat_1.statistic)
+    axs[0,1].plot(stat_2.bin_edges[:-1],stat_2.statistic)
+    axs[0,2].plot(stat_3.bin_edges[:-1],stat_3.statistic)
+    axs[1,0].plot(stat_4.bin_edges[:-1],stat_4.statistic)
+    axs[1,1].plot(stat_5.bin_edges[:-1],stat_5.statistic)
+    
+    axs[0,0].set_xlabel(par_name)
+    axs[0,1].set_xlabel(par_name)
+    axs[0,2].set_xlabel(par_name)
+    axs[1,0].set_xlabel(par_name)
+    axs[1,1].set_xlabel(par_name)
+    
+    axs[0,0].set_ylabel(idx_name[0])
+    axs[0,1].set_ylabel(idx_name[1])
+    axs[0,2].set_ylabel(idx_name[2])
+    axs[1,0].set_ylabel(idx_name[3])
+    axs[1,1].set_ylabel(idx_name[4])
+    return fig
+    
+    
+def idx_resol_stat4(par,i2,i3,i4,idx_1, idx_2, idx_3, idx_4,  idx_5,x_name='',par_name=['','','',''], idx_name=['','','','',''],statistic='median',bins=50, figsize=(10,5),s=1):
+    
+    fig, axs=plt.subplots(2, 3, figsize=figsize)
+    axs[1,2].axis('off')
+    
+    par2=par[i2]
+    par3=par[i3]
+    par4=par[i4]
+    
+    
+    
+    idx2_1=idx_1[i2]
+    idx2_2=idx_2[i2]
+    idx2_3=idx_3[i2]
+    idx2_4=idx_4[i2]
+    idx2_5=idx_5[i2]
+    
+    idx3_1=idx_1[i3]
+    idx3_2=idx_2[i3]
+    idx3_3=idx_3[i3]
+    idx3_4=idx_4[i3]
+    idx3_5=idx_5[i3]
+    
+    idx4_1=idx_1[i4]
+    idx4_2=idx_2[i4]
+    idx4_3=idx_3[i4]
+    idx4_4=idx_4[i4]
+    idx4_5=idx_5[i4]
+    
+    
+    
+    stat2_1=stats.binned_statistic(par2, idx2_1, statistic=statistic, bins=bins)
+    stat2_2=stats.binned_statistic(par2, idx2_2, statistic=statistic, bins=bins)
+    stat2_3=stats.binned_statistic(par2, idx2_3, statistic=statistic, bins=bins)
+    stat2_4=stats.binned_statistic(par2, idx2_4, statistic=statistic, bins=bins)
+    stat2_5=stats.binned_statistic(par2, idx2_5, statistic=statistic, bins=bins)
+    
+    stat3_1=stats.binned_statistic(par3, idx3_1, statistic=statistic, bins=bins)
+    stat3_2=stats.binned_statistic(par3, idx3_2, statistic=statistic, bins=bins)
+    stat3_3=stats.binned_statistic(par3, idx3_3, statistic=statistic, bins=bins)
+    stat3_4=stats.binned_statistic(par3, idx3_4, statistic=statistic, bins=bins)
+    stat3_5=stats.binned_statistic(par3, idx3_5, statistic=statistic, bins=bins)
+    
+    stat4_1=stats.binned_statistic(par4, idx4_1, statistic=statistic, bins=bins)
+    stat4_2=stats.binned_statistic(par4, idx4_2, statistic=statistic, bins=bins)
+    stat4_3=stats.binned_statistic(par4, idx4_3, statistic=statistic, bins=bins)
+    stat4_4=stats.binned_statistic(par4, idx4_4, statistic=statistic, bins=bins)
+    stat4_5=stats.binned_statistic(par4, idx4_5, statistic=statistic, bins=bins)
+    
+    
+    
+    axs[0,0].plot(stat2_1.bin_edges[:-1],stat2_1.statistic, label=par_name[1])
+    axs[0,1].plot(stat2_2.bin_edges[:-1],stat2_2.statistic, label=par_name[1])
+    axs[0,2].plot(stat2_3.bin_edges[:-1],stat2_3.statistic, label=par_name[1])
+    axs[1,0].plot(stat2_4.bin_edges[:-1],stat2_4.statistic, label=par_name[1])
+    axs[1,1].plot(stat2_5.bin_edges[:-1],stat2_5.statistic, label=par_name[1])
+    
+    axs[0,0].plot(stat3_1.bin_edges[:-1],stat3_1.statistic, label=par_name[2])
+    axs[0,1].plot(stat3_2.bin_edges[:-1],stat3_2.statistic, label=par_name[2])
+    axs[0,2].plot(stat3_3.bin_edges[:-1],stat3_3.statistic, label=par_name[2])
+    axs[1,0].plot(stat3_4.bin_edges[:-1],stat3_4.statistic, label=par_name[2])
+    axs[1,1].plot(stat3_5.bin_edges[:-1],stat3_5.statistic, label=par_name[2])
+    
+    axs[0,0].plot(stat4_1.bin_edges[:-1],stat4_1.statistic, label=par_name[3])
+    axs[0,1].plot(stat4_2.bin_edges[:-1],stat4_2.statistic, label=par_name[3])
+    axs[0,2].plot(stat4_3.bin_edges[:-1],stat4_3.statistic, label=par_name[3])
+    axs[1,0].plot(stat4_4.bin_edges[:-1],stat4_4.statistic, label=par_name[3])
+    axs[1,1].plot(stat4_5.bin_edges[:-1],stat4_5.statistic, label=par_name[3])
+    
+    
+    axs[0,0].set_xlabel(x_name)
+    axs[0,1].set_xlabel(x_name)
+    axs[0,2].set_xlabel(x_name)
+    axs[1,0].set_xlabel(x_name)
+    axs[1,1].set_xlabel(x_name)
+    
+    axs[0,0].set_ylabel(idx_name[0])
+    axs[0,1].set_ylabel(idx_name[1])
+    axs[0,2].set_ylabel(idx_name[2])
+    axs[1,0].set_ylabel(idx_name[3])
+    axs[1,1].set_ylabel(idx_name[4])
+    
+    axs[0,0].legend(loc='upper right')
+    axs[0,1].legend(loc='upper left')
+    axs[0,2].legend(loc='upper right')
+    axs[1,0].legend(loc='upper right')
+    axs[1,1].legend(loc='upper left')
+    
+    return fig
+    
+    
+    
+    
+    
+    
+    

@@ -10,6 +10,7 @@ model_dir=getenv('SEDLIBRARIES_DIR')+'/Sandage_varZ_v4.1eq_bc03MILES_ChFall/'
 
 err_mag_005=0.05
 err_mag_003=0.03
+err_mag_01=0.1
 Flux_calib_err=0.03 ;sistematic error on d4000 due to flux calibration
 SNR=20.
 seed=-10
@@ -20,10 +21,11 @@ for i_chunk=1, n_chunks do begin
   end_err_file='idxerr_'+string(i_chunk, format='(I03)')+'.fits'
   end_idx_file='idx_'+string(i_chunk, format='(I03)')+'.fits'
   end_spec_file=string(i_chunk, format='(I03)')+'.fits'
+  ;end_perterr_file='perterr_H_'+string(i_chunk, format='(I03)')+'.fits'
   end_perterr_file='perterr_'+string(i_chunk, format='(I03)')+'.fits'
   end_physpar_file=string(i_chunk, format='(I03)')+'_physpar'+'.fits'
   
-  err_file=model_dir+'mock_ER_001/'+prefix_file+end_err_file
+  err_file=model_dir+prefix_file+end_err_file
   idx_file=model_dir+prefix_file+end_idx_file
   spec_file=model_dir+prefix_file+end_spec_file
   perterr_file=model_dir+'mock_ER_001/'+prefix_file+end_perterr_file
@@ -48,7 +50,7 @@ for i_chunk=1, n_chunks do begin
   ;Add ugriz ab mag
   data_row=create_struct(data_row, 'ABMAG_u_pert', !values.f_nan, 'ERR_MAG_U', err_mag_005, 'ABMAG_g_pert', !values.f_nan, 'ERR_MAG_G', err_mag_003,$
                           'ABMAG_r_pert', !values.f_nan, 'ERR_MAG_R', err_mag_003, 'ABMAG_i_pert',$
-                          !values.f_nan, 'ERR_MAG_I', err_mag_003, 'ABMAG_z_pert', !values.f_nan, 'ERR_MAG_Z', err_mag_005)
+                          !values.f_nan, 'ERR_MAG_I', err_mag_003, 'ABMAG_z_pert', !values.f_nan, 'ERR_MAG_Z', err_mag_005); 'ABMAG_H_pert', !values.f_nan, 'ERR_MAG_H', err_mag_01)
   
   
   data_table=replicate(data_row, n_models)
@@ -56,12 +58,14 @@ for i_chunk=1, n_chunks do begin
   
   RND_mag_005=randomn(seed, n_models)*err_mag_005
   RND_mag_003=randomn(seed, n_models)*err_mag_003
+  RND_mag_01=randomn(seed, n_models)*err_mag_01
 
   data_table.abmag_u_pert=phys_table.abmag[0]+RND_mag_005
   data_table.abmag_g_pert=phys_table.abmag[1]+RND_mag_003
   data_table.abmag_r_pert=phys_table.abmag[2]+RND_mag_003
   data_table.abmag_i_pert=phys_table.abmag[3]+RND_mag_003
   data_table.abmag_z_pert=phys_table.abmag[4]+RND_mag_005
+  ;data_table.abmag_H_pert=phys_table.abmag[6]+RND_mag_01
 
   ;stop
   data_names=(tag_names(data_table))
