@@ -21,10 +21,11 @@ pro mock_fit
   mag_mod_redshift_interpol,redshift
   indx_mod_vdisp_interpol,vdisp
   
-  for i_chunks=1, n_chunks do begin
+  for i_chunk=1, n_chunks do begin
     ;; read mock table
     ;mock_fname='/Users/zibetti/ownCloud/Tesi_ERossi/models/sandage_varZ_v4.1eq_spec_dcomb_perterr_'+string(i_chunk, format='(I03)')+'.fits'
-    mock_fname=getenv('SEDLIBRARIES_DIR')+'/Sandage_varZ_v4.1eq_bc03MILES_ChFall/mock_ER_001/sandage_varZ_v4.1eq_spec_dcomb_perterr_H_'+string(i_chunk, format='(I03)')+'.fits' ;considero anche la banda H (_perterr_H_)
+    ;mock_fname=getenv('SEDLIBRARIES_DIR')+'/Sandage_varZ_v4.1eq_bc03MILES_ChFall/mock_ER_001/sandage_varZ_v4.1eq_spec_dcomb_perterr_H_'+string(i_chunk, format='(I03)')+'.fits' ;considero anche la banda H (_perterr_H_)
+    mock_fname=getenv('SEDLIBRARIES_DIR')+'/Sandage_varZ_v4.1eq_bc03MILES_ChFall/mock_ER_001/sandage_varZ_v4.1eq_spec_dcomb_perterr_H003_'+string(i_chunk, format='(I03)')+'.fits'
     models_dir=getenv('SEDLIBRARIES_DIR')+'/Sandage_varZ_v4.1eq_bc03MILES_ChFall/mock_ER_001/'
     mock_table=mrdfits(mock_fname,1)
     ;stop
@@ -77,7 +78,8 @@ pro mock_fit
     endfor
     ;stop
     for i_par=0, n_par-1 do begin
-      filename_ph=models_dir+'mock_file_'+phpars_to_fit[i_par]+'_H'+string(i_chunk, format='(I03)')+'.fits' ;se considero anche la banda H (_H)
+      ;filename_ph=models_dir+'mock_file_'+phpars_to_fit[i_par]+'_H'+string(i_chunk, format='(I03)')+'.fits' ;se considero anche la banda H (_H)
+      filename_ph=models_dir+'mock_file_'+phpars_to_fit[i_par]+'_H003'+string(i_chunk, format='(I03)')+'.fits'
       ;filename_ph=models_dir+'mock_file_'+phpars_to_fit[i_par]+string(i_chunk, format='(I03)')+'.fits' ;se considero anche la banda H (_H)
       mwrfits, tables.(i_par), filename_ph, /create
     endfor
