@@ -27,6 +27,7 @@ def bisection(f, t_min, t_max, toll):
         
 
 
+
 def rms_1684(z):
     perc_16=np.percentile(z,16)
     perc_84=np.percentile(z,84)
@@ -169,6 +170,25 @@ def diff_density_map(x,y,par1,par2,statistic,name1='',name2='',xlabel='',ylabel=
     ax.set_ylabel(ylabel)
     
     return fig, ax, stat_diffpar.statistic
+
+
+def density_map(x,y,par,statistic,name='',xlabel='',ylabel='',figsize=(10,25),vmin=None,vmax=None, bins=50):
+    stat_diffpar=stats.binned_statistic_2d(x,y,par,bins=bins,statistic=statistic)
+    
+    y_g,x_g=np.meshgrid(stat_diffpar.y_edge, stat_diffpar.x_edge)
+    
+    fig, ax=plt.subplots(figsize=figsize)
+    im=ax.pcolormesh(x_g, y_g, stat_diffpar.statistic,cmap=cm.Spectral,vmin=vmin, vmax=vmax)
+    fig.colorbar(im, ax=ax)
+    ax.set_facecolor('grey')
+    ax.set_title(name)
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    
+    return fig
+
+
+
 
 def prior_comp(par_binned, par, mock_par, n_lim=3, figsize=(15,10), limits=[None, None, None],name_binned_par=''):
     
@@ -601,7 +621,7 @@ def idx_resol_stat4col(par,i2,i3,i4,idx_1, idx_2, idx_3, idx_4, x_name='d1090n50
     return fig
     
     
-def chi_q(par,idx1, idx2, idx3, idx4, idx5, mag1, mag2, mag3, mag4, isel, iref,figsize=(15,10), title='', ylim=[None,None], xlim=[None, None],toll=0.1):
+def chi_q(par,idx1, idx2, idx3, idx4, idx5, mag1, mag2, mag3, mag4, isel, iref,figsize=(15,10), title='', ylim=[None,None], xlim=[None, None], bins=50, xmin=-0.75, xmax=1.0, toll=0.1):
     import function_plot as f_plt
     fig, axs=plt.subplots(1,3,figsize=figsize)
     
@@ -648,15 +668,15 @@ def chi_q(par,idx1, idx2, idx3, idx4, idx5, mag1, mag2, mag3, mag4, isel, iref,f
 
     chi_q=chi_q_idx+chi_q_mag
 
-    median_chi_idx=stats.binned_statistic(par_sel, chi_q_idx, statistic='median', bins=50)
+    median_chi_idx=stats.binned_statistic(par_sel, chi_q_idx, statistic='median', bins=bins)
     #chi_16_idx=stats.binned_statistic(par_sel, chi_q_idx, statistic=f_plt.perc_16, bins=50)
     #chi_84_idx=stats.binned_statistic(par_sel, chi_q_idx, statistic=f_plt.perc_84, bins=50)
     
-    median_chi_mag=stats.binned_statistic(par_sel, chi_q_mag, statistic='median', bins=50)
+    median_chi_mag=stats.binned_statistic(par_sel, chi_q_mag, statistic='median', bins=bins)
     #chi_16_mag=stats.binned_statistic(par_sel, chi_q_mag, statistic=f_plt.perc_16, bins=50)
     #chi_84_mag=stats.binned_statistic(par_sel, chi_q_mag, statistic=f_plt.perc_84, bins=50)
     
-    median_chi=stats.binned_statistic(par_sel, chi_q, statistic='median', bins=50)
+    median_chi=stats.binned_statistic(par_sel, chi_q, statistic='median', bins=bins)
     #chi_16=stats.binned_statistic(par_sel, chi_q, statistic=f_plt.perc_16, bins=50)
     #chi_84=stats.binned_statistic(par_sel, chi_q, statistic=f_plt.perc_84, bins=50)
     
@@ -673,9 +693,13 @@ def chi_q(par,idx1, idx2, idx3, idx4, idx5, mag1, mag2, mag3, mag4, isel, iref,f
     p84_chi_ref_mag=f_plt.perc_84(chi_q_mag[idx_ref_chi])
     p16_chi_ref_mag=f_plt.perc_16(chi_q_mag[idx_ref_chi])
     
+    x=[0.0]*bins
+    
+    for i in range(0,bins):
+        x[i]=(median_chi.bin_edges[i+1]+median_chi.bin_edges[i])/2.0
     
     axs[0].scatter(par_sel,(chi_q),s=1)
-    axs[0].plot(median_chi.bin_edges[:-1], (median_chi.statistic), color='red')
+    axs[0].plot(x, (median_chi.statistic), color='red')
     #axs[0].plot(chi_16.bin_edges[:-1], chi_16.statistic, color='red')
     #axs[0].plot(chi_84.bin_edges[:-1], chi_84.statistic, color='red')
     
@@ -683,9 +707,6 @@ def chi_q(par,idx1, idx2, idx3, idx4, idx5, mag1, mag2, mag3, mag4, isel, iref,f
     axs[0].plot([np.min(par_sel), np.max(par_sel)], [p84_chi_ref, p84_chi_ref],color='#ff028d')
     axs[0].plot([np.min(par_sel), np.max(par_sel)],[p16_chi_ref,p16_chi_ref], color='#ff028d')
     
-    diff=abs(median_chi.statistic-p84_chi_ref)
-    idx_lim=(diff < toll)
-    par_binned=median_chi.bin_edges[:-1]
     
     axs[0].set_ylim(ylim)
     
@@ -693,7 +714,7 @@ def chi_q(par,idx1, idx2, idx3, idx4, idx5, mag1, mag2, mag3, mag4, isel, iref,f
     axs[0].set_ylabel('chi_q')
     
     axs[1].scatter(par_sel,(chi_q_idx),s=1)
-    axs[1].plot(median_chi_idx.bin_edges[:-1], (median_chi_idx.statistic), color='red')
+    axs[1].plot(x, (median_chi_idx.statistic), color='red')
     #axs[1].plot(chi_16_idx.bin_edges[:-1], chi_16_idx.statistic, color='red')
     #axs[1].plot(chi_84_idx.bin_edges[:-1], chi_84_idx.statistic, color='red')
     
@@ -709,7 +730,7 @@ def chi_q(par,idx1, idx2, idx3, idx4, idx5, mag1, mag2, mag3, mag4, isel, iref,f
 
     
     axs[2].scatter(par_sel,(chi_q_mag),s=1)
-    axs[2].plot(median_chi_mag.bin_edges[:-1], (median_chi_mag.statistic), color='red')
+    axs[2].plot(x, (median_chi_mag.statistic), color='red')
     #axs[2].plot(chi_16_mag.bin_edges[:-1], chi_16_mag.statistic, color='red')
     #axs[2].plot(chi_84_mag.bin_edges[:-1], chi_84_mag.statistic, color='red')
     
@@ -727,10 +748,19 @@ def chi_q(par,idx1, idx2, idx3, idx4, idx5, mag1, mag2, mag3, mag4, isel, iref,f
     axs[2].set_facecolor('#d8dcd6')
 
     axs[1].set_title(title)
-    return fig, par_binned[idx_lim]
+    
+    #inter_max=np.interp(xmax,x, median_chi.statistic)
+    #inter_min=np.interp(xmin, x, median_chi.statistic)
+    inter_chi=lambda t: np.interp(t, x, median_chi.statistic-p84_chi_ref)
+    x_m=f_plt.bisection(inter_chi, xmin, xmax, toll)
+    axs[0].scatter(x_m, inter_chi(x_m)+p84_chi_ref, s=20, color='red')
+    
+    print('d1090n50 limit:', x_m)
+    
+    return fig, chi_q
 
 
-def chi_q_comp_idx(par,idx1, idx2, idx3, idx4, idx5,isel, iref, name_par='d1090n50', name_idx=['D4000n','HdHg','Hb','Mg2Fe','MgFep'],figsize=(15,10), title='', ylim=[None,None], xlim=[None, None]):
+def chi_q_comp_idx(par,idx1, idx2, idx3, idx4, idx5,isel, iref, name_par='d1090n50', name_idx=['D4000n','HdHg','Hb','Mg2Fe','MgFep'],figsize=(15,10), title='', ylim=[None,None], xlim=[None, None], bins=50):
     
     import function_plot as f_plt
     fig, axs=plt.subplots(2,3,figsize=figsize)    
@@ -785,14 +815,19 @@ def chi_q_comp_idx(par,idx1, idx2, idx3, idx4, idx5,isel, iref, name_par='d1090n
     p84_chi_ref5=f_plt.perc_84(chi_q5[idx_ref_chi])
     p16_chi_ref5=f_plt.perc_16(chi_q5[idx_ref_chi])
 
-    median_chi_idx1=stats.binned_statistic(par_sel, chi_q1, statistic='median', bins=50)
-    median_chi_idx2=stats.binned_statistic(par_sel, chi_q2, statistic='median', bins=50)
-    median_chi_idx3=stats.binned_statistic(par_sel, chi_q3, statistic='median', bins=50)
-    median_chi_idx4=stats.binned_statistic(par_sel, chi_q4, statistic='median', bins=50)
-    median_chi_idx5=stats.binned_statistic(par_sel, chi_q5, statistic='median', bins=50)
+    median_chi_idx1=stats.binned_statistic(par_sel, chi_q1, statistic='median', bins=bins)
+    median_chi_idx2=stats.binned_statistic(par_sel, chi_q2, statistic='median', bins=bins)
+    median_chi_idx3=stats.binned_statistic(par_sel, chi_q3, statistic='median', bins=bins)
+    median_chi_idx4=stats.binned_statistic(par_sel, chi_q4, statistic='median', bins=bins)
+    median_chi_idx5=stats.binned_statistic(par_sel, chi_q5, statistic='median', bins=bins)
+    
+    x=[0.0]*bins
+    
+    for i in range(0,bins):
+        x[i]=(median_chi_idx1.bin_edges[i+1]+median_chi_idx1.bin_edges[i])/2.0
 
     axs[0,0].scatter(par_sel, chi_q1, s=1)
-    axs[0,0].plot(median_chi_idx1.bin_edges[:-1], median_chi_idx1.statistic, color='red')
+    axs[0,0].plot(x, median_chi_idx1.statistic, color='red')
     axs[0,0].plot([np.min(par_sel), np.max(par_sel)], [median_chi_ref1, median_chi_ref1], color='orange')
     axs[0,0].plot([np.min(par_sel), np.max(par_sel)], [p84_chi_ref1, p84_chi_ref1],color='#ff028d')
     axs[0,0].plot([np.min(par_sel), np.max(par_sel)],[p16_chi_ref1,p16_chi_ref1], color='#ff028d')
@@ -802,7 +837,7 @@ def chi_q_comp_idx(par,idx1, idx2, idx3, idx4, idx5,isel, iref, name_par='d1090n
     axs[0,0].set_ylim(ylim)
 
     axs[0,1].scatter(par_sel, chi_q2, s=1)
-    axs[0,1].plot(median_chi_idx2.bin_edges[:-1], median_chi_idx2.statistic, color='red')
+    axs[0,1].plot(x, median_chi_idx2.statistic, color='red')
     axs[0,1].plot([np.min(par_sel), np.max(par_sel)], [median_chi_ref2, median_chi_ref2], color='orange')
     axs[0,1].plot([np.min(par_sel), np.max(par_sel)], [p84_chi_ref2, p84_chi_ref2],color='#ff028d')
     axs[0,1].plot([np.min(par_sel), np.max(par_sel)],[p16_chi_ref2,p16_chi_ref2], color='#ff028d')
@@ -813,7 +848,7 @@ def chi_q_comp_idx(par,idx1, idx2, idx3, idx4, idx5,isel, iref, name_par='d1090n
     axs[0,1].set_title(title)
 
     axs[0,2].scatter(par_sel, chi_q3, s=1)
-    axs[0,2].plot(median_chi_idx3.bin_edges[:-1], median_chi_idx3.statistic, color='red')
+    axs[0,2].plot(x, median_chi_idx3.statistic, color='red')
     axs[0,2].plot([np.min(par_sel), np.max(par_sel)], [median_chi_ref3, median_chi_ref3], color='orange')
     axs[0,2].plot([np.min(par_sel), np.max(par_sel)], [p84_chi_ref3, p84_chi_ref3],color='#ff028d')
     axs[0,2].plot([np.min(par_sel), np.max(par_sel)],[p16_chi_ref3,p16_chi_ref3], color='#ff028d')
@@ -823,7 +858,7 @@ def chi_q_comp_idx(par,idx1, idx2, idx3, idx4, idx5,isel, iref, name_par='d1090n
     axs[0,2].set_ylim(ylim)
     
     axs[1,0].scatter(par_sel, chi_q4, s=1)
-    axs[1,0].plot(median_chi_idx4.bin_edges[:-1], median_chi_idx4.statistic, color='red')
+    axs[1,0].plot(x, median_chi_idx4.statistic, color='red')
     axs[1,0].plot([np.min(par_sel), np.max(par_sel)], [median_chi_ref4, median_chi_ref4], color='orange')
     axs[1,0].plot([np.min(par_sel), np.max(par_sel)], [p84_chi_ref4, p84_chi_ref4],color='#ff028d')
     axs[1,0].plot([np.min(par_sel), np.max(par_sel)],[p16_chi_ref4,p16_chi_ref4], color='#ff028d')
@@ -833,7 +868,7 @@ def chi_q_comp_idx(par,idx1, idx2, idx3, idx4, idx5,isel, iref, name_par='d1090n
     axs[1,0].set_ylim(ylim)
     
     axs[1,1].scatter(par_sel, chi_q5, s=1)
-    axs[1,1].plot(median_chi_idx5.bin_edges[:-1], median_chi_idx5.statistic, color='red')
+    axs[1,1].plot(x, median_chi_idx5.statistic, color='red')
     axs[1,1].plot([np.min(par_sel), np.max(par_sel)], [median_chi_ref5, median_chi_ref5], color='orange')
     axs[1,1].plot([np.min(par_sel), np.max(par_sel)], [p84_chi_ref5, p84_chi_ref5],color='#ff028d')
     axs[1,1].plot([np.min(par_sel), np.max(par_sel)],[p16_chi_ref5,p16_chi_ref5], color='#ff028d')
@@ -844,7 +879,7 @@ def chi_q_comp_idx(par,idx1, idx2, idx3, idx4, idx5,isel, iref, name_par='d1090n
     
     return fig
 
-def chi_q_comp_col(par,idx1, idx2, idx3, idx4,isel, iref, name_par='d1090n50', name_idx=['u-r','g-r','r-i','r-z'],figsize=(15,10), title='', ylim=[None,None], xlim=[None, None]):
+def chi_q_comp_col(par,idx1, idx2, idx3, idx4,isel, iref, name_par='d1090n50', name_idx=['u-r','g-r','r-i','r-z'],figsize=(15,10), title='', ylim=[None,None], xlim=[None, None], bins=50):
     
     import function_plot as f_plt
     fig, axs=plt.subplots(2,3,figsize=figsize)    
@@ -893,13 +928,18 @@ def chi_q_comp_col(par,idx1, idx2, idx3, idx4,isel, iref, name_par='d1090n50', n
     p16_chi_ref4=f_plt.perc_16(chi_q4[idx_ref_chi])
     
 
-    median_chi_idx1=stats.binned_statistic(par_sel, chi_q1, statistic='median', bins=50)
-    median_chi_idx2=stats.binned_statistic(par_sel, chi_q2, statistic='median', bins=50)
-    median_chi_idx3=stats.binned_statistic(par_sel, chi_q3, statistic='median', bins=50)
-    median_chi_idx4=stats.binned_statistic(par_sel, chi_q4, statistic='median', bins=50)
+    median_chi_idx1=stats.binned_statistic(par_sel, chi_q1, statistic='median', bins=bins)
+    median_chi_idx2=stats.binned_statistic(par_sel, chi_q2, statistic='median', bins=bins)
+    median_chi_idx3=stats.binned_statistic(par_sel, chi_q3, statistic='median', bins=bins)
+    median_chi_idx4=stats.binned_statistic(par_sel, chi_q4, statistic='median', bins=bins)
+    
+    x=[0.0]*bins
+    
+    for i in range(0,bins):
+        x[i]=(median_chi_idx1.bin_edges[i+1]+median_chi_idx1.bin_edges[i])/2.0
 
     axs[0,0].scatter(par_sel, chi_q1, s=1)
-    axs[0,0].plot(median_chi_idx1.bin_edges[:-1], median_chi_idx1.statistic, color='red')
+    axs[0,0].plot(x, median_chi_idx1.statistic, color='red')
     axs[0,0].plot([np.min(par_sel), np.max(par_sel)], [median_chi_ref1, median_chi_ref1], color='orange')
     axs[0,0].plot([np.min(par_sel), np.max(par_sel)], [p84_chi_ref1, p84_chi_ref1],color='#ff028d')
     axs[0,0].plot([np.min(par_sel), np.max(par_sel)],[p16_chi_ref1,p16_chi_ref1], color='#ff028d')
@@ -909,7 +949,7 @@ def chi_q_comp_col(par,idx1, idx2, idx3, idx4,isel, iref, name_par='d1090n50', n
     axs[0,0].set_ylim(ylim)
 
     axs[0,1].scatter(par_sel, chi_q2, s=1)
-    axs[0,1].plot(median_chi_idx2.bin_edges[:-1], median_chi_idx2.statistic, color='red')
+    axs[0,1].plot(x, median_chi_idx2.statistic, color='red')
     axs[0,1].plot([np.min(par_sel), np.max(par_sel)], [median_chi_ref2, median_chi_ref2], color='orange')
     axs[0,1].plot([np.min(par_sel), np.max(par_sel)], [p84_chi_ref2, p84_chi_ref2],color='#ff028d')
     axs[0,1].plot([np.min(par_sel), np.max(par_sel)],[p16_chi_ref2,p16_chi_ref2], color='#ff028d')
@@ -920,7 +960,7 @@ def chi_q_comp_col(par,idx1, idx2, idx3, idx4,isel, iref, name_par='d1090n50', n
     axs[0,1].set_title(title)
 
     axs[0,2].scatter(par_sel, chi_q3, s=1)
-    axs[0,2].plot(median_chi_idx3.bin_edges[:-1], median_chi_idx3.statistic, color='red')
+    axs[0,2].plot(x, median_chi_idx3.statistic, color='red')
     axs[0,2].plot([np.min(par_sel), np.max(par_sel)], [median_chi_ref3, median_chi_ref3], color='orange')
     axs[0,2].plot([np.min(par_sel), np.max(par_sel)], [p84_chi_ref3, p84_chi_ref3],color='#ff028d')
     axs[0,2].plot([np.min(par_sel), np.max(par_sel)],[p16_chi_ref3,p16_chi_ref3], color='#ff028d')
@@ -930,7 +970,7 @@ def chi_q_comp_col(par,idx1, idx2, idx3, idx4,isel, iref, name_par='d1090n50', n
     axs[0,2].set_ylim(ylim)
     
     axs[1,0].scatter(par_sel, chi_q4, s=1)
-    axs[1,0].plot(median_chi_idx4.bin_edges[:-1], median_chi_idx4.statistic, color='red')
+    axs[1,0].plot(x, median_chi_idx4.statistic, color='red')
     axs[1,0].plot([np.min(par_sel), np.max(par_sel)], [median_chi_ref4, median_chi_ref4], color='orange')
     axs[1,0].plot([np.min(par_sel), np.max(par_sel)], [p84_chi_ref4, p84_chi_ref4],color='#ff028d')
     axs[1,0].plot([np.min(par_sel), np.max(par_sel)],[p16_chi_ref4,p16_chi_ref4], color='#ff028d')
