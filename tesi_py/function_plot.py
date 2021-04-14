@@ -9,6 +9,8 @@ import scipy.stats as stats
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
+import os
+import astropy.io.fits as fits
 
 def bisection(f, t_min, t_max, toll):
     if f(t_min)*f(t_max)>=0:
@@ -706,11 +708,11 @@ def chi_q(par,idx1, idx2, idx3, idx4, idx5, mag1, mag2, mag3, mag4, isel, iref,f
     axs[0].plot([np.min(par_sel), np.max(par_sel)], [median_chi_ref, median_chi_ref], color='orange')
     axs[0].plot([np.min(par_sel), np.max(par_sel)], [p84_chi_ref, p84_chi_ref],color='#ff028d')
     axs[0].plot([np.min(par_sel), np.max(par_sel)],[p16_chi_ref,p16_chi_ref], color='#ff028d')
-    
+    axs[0].set_yscale("log")
     
     axs[0].set_ylim(ylim)
     
-    axs[0].set_xlabel('d1090n50_ldnbz')
+    axs[0].set_xlabel('d1090n50')
     axs[0].set_ylabel('chi_q')
     
     axs[1].scatter(par_sel,(chi_q_idx),s=1)
@@ -723,9 +725,10 @@ def chi_q(par,idx1, idx2, idx3, idx4, idx5, mag1, mag2, mag3, mag4, isel, iref,f
     axs[1].plot([np.min(par_sel), np.max(par_sel)],[p16_chi_ref_idx,p16_chi_ref_idx], color='#ff028d')
     
 
-    axs[1].set_xlabel('d1090n50_ldnbz')
+    axs[1].set_xlabel('d1090n50')
     axs[1].set_ylabel('chi_q_idx')
     
+    axs[1].set_yscale("log")
     axs[1].set_ylim(ylim)
 
     
@@ -738,9 +741,10 @@ def chi_q(par,idx1, idx2, idx3, idx4, idx5, mag1, mag2, mag3, mag4, isel, iref,f
     axs[2].plot([np.min(par_sel), np.max(par_sel)], [p84_chi_ref_mag, p84_chi_ref_mag],color='#ff028d')
     axs[2].plot([np.min(par_sel), np.max(par_sel)],[p16_chi_ref_mag,p16_chi_ref_mag], color='#ff028d')
     
+    axs[2].set_yscale("log")
     axs[2].set_ylim(ylim)
     
-    axs[2].set_xlabel('d1090n50_ldnbz')
+    axs[2].set_xlabel('d1090n50')
     axs[2].set_ylabel('chi_q_col')
     
     axs[0].set_facecolor('#d8dcd6')
@@ -757,7 +761,79 @@ def chi_q(par,idx1, idx2, idx3, idx4, idx5, mag1, mag2, mag3, mag4, isel, iref,f
     
     print('d1090n50 limit:', x_m)
     
-    return fig, chi_q
+    return fig, x_m
+
+
+
+def chi_q_num(par,idx1, idx2, idx3, idx4, idx5, mag1, mag2, mag3, mag4, isel, iref, bins=50, xmin=-0.75, xmax=1.0, toll=0.1):
+    import function_plot as f_plt
+    
+    par_sel=par[isel]
+    
+    idx1_sel=idx1[isel]
+    idx2_sel=idx2[isel]
+    idx3_sel=idx3[isel]
+    idx4_sel=idx4[isel]
+    idx5_sel=idx5[isel]
+    
+    idx1_ref=np.median(idx1[iref])
+    idx2_ref=np.median(idx2[iref])
+    idx3_ref=np.median(idx3[iref])
+    idx4_ref=np.median(idx4[iref])
+    idx5_ref=np.median(idx5[iref])
+    
+    mag1_sel=mag1[isel]
+    mag2_sel=mag2[isel]
+    mag3_sel=mag3[isel]
+    mag4_sel=mag4[isel]
+    
+    
+    mag1_ref=np.median(mag1[iref])
+    mag2_ref=np.median(mag2[iref])
+    mag3_ref=np.median(mag3[iref])
+    mag4_ref=np.median(mag4[iref])
+    
+    
+    sigma_idx1=f_plt.perc_84(idx1[iref])-f_plt.perc_16(idx1[iref])
+    sigma_idx2=f_plt.perc_84(idx2[iref])-f_plt.perc_16(idx2[iref])
+    sigma_idx3=f_plt.perc_84(idx3[iref])-f_plt.perc_16(idx3[iref])
+    sigma_idx4=f_plt.perc_84(idx4[iref])-f_plt.perc_16(idx4[iref])
+    sigma_idx5=f_plt.perc_84(idx5[iref])-f_plt.perc_16(idx5[iref])
+    
+    sigma_mag1=f_plt.perc_84(mag1[iref])-f_plt.perc_16(mag1[iref])
+    sigma_mag2=f_plt.perc_84(mag2[iref])-f_plt.perc_16(mag2[iref])
+    sigma_mag3=f_plt.perc_84(mag3[iref])-f_plt.perc_16(mag3[iref])
+    sigma_mag4=f_plt.perc_84(mag4[iref])-f_plt.perc_16(mag4[iref])
+    
+    
+    chi_q_idx=((idx1_sel-idx1_ref)/sigma_idx1)**2+((idx2_sel-idx2_ref)/sigma_idx2)**2+((idx3_sel-idx3_ref)/sigma_idx3)**2+((idx4_sel-idx4_ref)/sigma_idx4)**2+((idx5_sel-idx5_ref)/sigma_idx5)**2
+    chi_q_mag=((mag1_sel-mag1_ref)/sigma_mag1)**2+((mag2_sel-mag2_ref)/sigma_mag2)**2+((mag3_sel-mag3_ref)/sigma_mag3)**2+((mag4_sel-mag4_ref)/sigma_mag4)**2
+
+    chi_q=chi_q_idx+chi_q_mag
+
+   
+    median_chi=stats.binned_statistic(par_sel, chi_q, statistic='median', bins=bins)
+    #chi_16=stats.binned_statistic(par_sel, chi_q, statistic=f_plt.perc_16, bins=50)
+    #chi_84=stats.binned_statistic(par_sel, chi_q, statistic=f_plt.perc_84, bins=50)
+    
+    idx_ref_chi=np.where(par_sel<-0.75)[0]
+    p84_chi_ref=f_plt.perc_84(chi_q[idx_ref_chi])
+    
+   
+    x=[0.0]*bins
+    
+    for i in range(0,bins):
+        x[i]=(median_chi.bin_edges[i+1]+median_chi.bin_edges[i])/2.0
+    
+   
+    #inter_max=np.interp(xmax,x, median_chi.statistic)
+    #inter_min=np.interp(xmin, x, median_chi.statistic)
+    inter_chi=lambda t: np.interp(t, x, median_chi.statistic-p84_chi_ref)
+    x_m=f_plt.bisection(inter_chi, xmin, xmax, toll)
+    
+    print('d1090n50 limit:', x_m)
+    
+    return x_m
 
 
 def chi_q_comp_idx(par,idx1, idx2, idx3, idx4, idx5,isel, iref, name_par='d1090n50', name_idx=['D4000n','HdHg','Hb','Mg2Fe','MgFep'],figsize=(15,10), title='', ylim=[None,None], xlim=[None, None], bins=50):
@@ -835,6 +911,7 @@ def chi_q_comp_idx(par,idx1, idx2, idx3, idx4, idx5,isel, iref, name_par='d1090n
     axs[0,0].set_xlabel(name_par)
     axs[0,0].set_ylabel('chi_q '+name_idx[0])
     axs[0,0].set_ylim(ylim)
+    axs[0,0].set_yscale("log")
 
     axs[0,1].scatter(par_sel, chi_q2, s=1)
     axs[0,1].plot(x, median_chi_idx2.statistic, color='red')
@@ -846,6 +923,7 @@ def chi_q_comp_idx(par,idx1, idx2, idx3, idx4, idx5,isel, iref, name_par='d1090n
     axs[0,1].set_ylabel('chi_q '+name_idx[1])
     axs[0,1].set_ylim(ylim)
     axs[0,1].set_title(title)
+    axs[0,1].set_yscale("log")
 
     axs[0,2].scatter(par_sel, chi_q3, s=1)
     axs[0,2].plot(x, median_chi_idx3.statistic, color='red')
@@ -856,6 +934,7 @@ def chi_q_comp_idx(par,idx1, idx2, idx3, idx4, idx5,isel, iref, name_par='d1090n
     axs[0,2].set_xlabel(name_par)
     axs[0,2].set_ylabel('chi_q '+name_idx[2])
     axs[0,2].set_ylim(ylim)
+    axs[0,2].set_yscale("log")
     
     axs[1,0].scatter(par_sel, chi_q4, s=1)
     axs[1,0].plot(x, median_chi_idx4.statistic, color='red')
@@ -866,6 +945,7 @@ def chi_q_comp_idx(par,idx1, idx2, idx3, idx4, idx5,isel, iref, name_par='d1090n
     axs[1,0].set_xlabel(name_par)
     axs[1,0].set_ylabel('chi_q '+name_idx[3])
     axs[1,0].set_ylim(ylim)
+    axs[1,0].set_yscale("log")
     
     axs[1,1].scatter(par_sel, chi_q5, s=1)
     axs[1,1].plot(x, median_chi_idx5.statistic, color='red')
@@ -876,6 +956,7 @@ def chi_q_comp_idx(par,idx1, idx2, idx3, idx4, idx5,isel, iref, name_par='d1090n
     axs[1,1].set_xlabel(name_par)
     axs[1,1].set_ylabel('chi_q '+name_idx[4])
     axs[1,1].set_ylim(ylim)
+    axs[1,1].set_yscale("log")
     
     return fig
 
@@ -947,6 +1028,7 @@ def chi_q_comp_col(par,idx1, idx2, idx3, idx4,isel, iref, name_par='d1090n50', n
     axs[0,0].set_xlabel(name_par)
     axs[0,0].set_ylabel('chi_q '+name_idx[0])
     axs[0,0].set_ylim(ylim)
+    axs[0,0].set_yscale("log")
 
     axs[0,1].scatter(par_sel, chi_q2, s=1)
     axs[0,1].plot(x, median_chi_idx2.statistic, color='red')
@@ -958,6 +1040,7 @@ def chi_q_comp_col(par,idx1, idx2, idx3, idx4,isel, iref, name_par='d1090n50', n
     axs[0,1].set_ylabel('chi_q '+name_idx[1])
     axs[0,1].set_ylim(ylim)
     axs[0,1].set_title(title)
+    axs[0,1].set_yscale("log")
 
     axs[0,2].scatter(par_sel, chi_q3, s=1)
     axs[0,2].plot(x, median_chi_idx3.statistic, color='red')
@@ -968,6 +1051,7 @@ def chi_q_comp_col(par,idx1, idx2, idx3, idx4,isel, iref, name_par='d1090n50', n
     axs[0,2].set_xlabel(name_par)
     axs[0,2].set_ylabel('chi_q '+name_idx[2])
     axs[0,2].set_ylim(ylim)
+    axs[0,2].set_yscale("log")
     
     axs[1,0].scatter(par_sel, chi_q4, s=1)
     axs[1,0].plot(x, median_chi_idx4.statistic, color='red')
@@ -978,13 +1062,11 @@ def chi_q_comp_col(par,idx1, idx2, idx3, idx4,isel, iref, name_par='d1090n50', n
     axs[1,0].set_xlabel(name_par)
     axs[1,0].set_ylabel('chi_q '+name_idx[3])
     axs[1,0].set_ylim(ylim)
+    axs[1,0].set_yscale("log")
     
     
     return fig
  
+
+
     
- 
-    
-        
-        
-        

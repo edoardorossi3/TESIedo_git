@@ -1,4 +1,4 @@
-pro pert_idx
+pro pert_idx, i_chunks
 
 ;err_file='sandage_varZ_v4.1eq_spec_dcomb_idxerr_001.fits'
 ;idx_file='sandage_varZ_v4.1eq_spec_dcomb_idx_001.fits'
@@ -14,9 +14,9 @@ err_mag_003=0.03
 Flux_calib_err=0.03 ;sistematic error on d4000 due to flux calibration
 SNR=20.
 seed=-10
-n_chunks=1  ;numbers of fits file to read
+;n_chunks=1  ;numbers of fits file to read
 
-for i_chunk=1, n_chunks do begin
+;for i_chunk=1, n_chunks do begin
   ;we define strings to read our fits file
   end_err_file='idxerr_'+string(i_chunk, format='(I03)')+'.fits'
   end_idx_file='idx_'+string(i_chunk, format='(I03)')+'.fits'
@@ -93,10 +93,59 @@ for i_chunk=1, n_chunks do begin
 mwrfits,  data_table, perterr_file, /create  
   
 ;stop
-endfor
+;endfor
 
 
 
 
+
+end
+
+
+
+pro parall_pert_idx
+  maxthreads=10 ; max number of parallel threads
+  obridge=objarr(maxthreads)
+  cur_chunk=intarr(maxthreads)
+  nchunks=40
+  nthreads=0 ; number of active threads
+  i_chunk=0
+  SNR=20.
+  watchinterval=2
+  while i_chunk lt nchunks or nthreads gt 0 do begin
+    if nthreads lt maxthreads and i_chunk lt nchunks then begin ; still chunks to process and thread free
+      ;; look for the first free thread
+      for ithread=0,maxthreads-1 do begin
+        if not(OBJ_VALID(obridge[ithread])) and i_chunk lt nchunks then begin
+          ; launch a new process
+          ; get ready for the first chunk to process
+          obridge[ithread]=obj_new('IDL_IDLBridge',output=getenv('HOME')+'/idl/log_files/perterr_'+string(i_chunk+1, format='(I02)')+'.log') ; write terminal output to the named file
+          obridge[ithread]->execute,'@'+pref_get('IDL_STARTUP') ; execute IDL_STARTUP commands
+          obridge[ithread]->execute,'.r '+getenv('BASTA_DIR')+'/idl/BaStA/BaStA_index.pro'
+          obridge[ithread]->execute,'.r '+getenv('TESI_EDO')+'pert_idx.pro' ;; fill in your idl .pro file to be compiled
+          obridge[ithread]->execute,'pert_idx,'+string(i_chunk+1),/nowait  ;; fill in the command line to process a single chunk i_chunk
+          cur_chunk[ithread]=i_chunk
+          print,'Job '+string(ithread)+' started (chunk='+string(cur_chunk[ithread])+')'
+          nthreads=nthreads+1
+          i_chunk++
+        endif
+      endfor
+    endif else begin
+      ;; all threads are already busy
+      wait,watchinterval/2. ;; wait for a while
+      for ithread=0,maxthreads-1 do begin
+        if OBJ_VALID(obridge[ithread]) then begin
+          ;; check if any of the threads has finished
+          objstatus=obridge[ithread]->status()
+          if objstatus gt 1 then begin
+            print,'Job '+string(ithread)+' finished (chunk='+string(cur_chunk[ithread])+')'
+            obridge[ithread]->cleanup
+            nthreads--
+          endif
+        endif
+      endfor
+      wait,watchinterval/2. ;; wait for a while for process to actually terminate
+    endelse
+  endwhile
 
 end
