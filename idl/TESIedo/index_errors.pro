@@ -3,13 +3,13 @@ pro index_errors,i_chunk,SNR
   read_idxinfo
 
   if n_elements(SNR) eq 0  then SNR=20. ; if SNR not given, assume default SNR=20.
-
+  i_chunk=1
   ;prog_dir='~/Desktop/TESIedo_git/'
-  models_dir=getenv('SEDLIBRARIES_DIR')+'/Sandage_varZ_v4.1eq_bc03MILES_ChFall/' ;'~/Desktop/TESI/models/sandage_dcomb/'
-  file_prefix='sandage_varZ_v4.1eq_spec_'
-  spec_suffix='dcomb_'
-  idx_suffix='dcomb_idx_'
-  idx_suffix_werr='dcomb_idxerr_'
+  models_dir=getenv('SEDLIBRARIES_DIR')+'/Sandage_v4.1_Zfix_noburst_bc03MILES_100k/' ;'~/Desktop/TESI/models/sandage_dcomb/'
+  file_prefix='sandage_varZ_v4.1_m62fix_noburst_100k_spec_'  
+  spec_suffix='dcombnull_'                      
+  idx_suffix='dcombnull_idx_'
+  idx_suffix_werr='dcombnull_idxerr_'
   file_ext='.fits'
   ;; sndg_num=indgen(2) ; vuoi un array intero che parta da 1, non lo generi facendone uno in piu' e partendo poi dal secondo elemento
   ;tot_file=n_elements(sndg_num)

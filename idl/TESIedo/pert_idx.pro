@@ -1,12 +1,12 @@
-pro pert_idx, i_chunks
-
+pro pert_idx, i_chunk
+i_chunk=1
 ;err_file='sandage_varZ_v4.1eq_spec_dcomb_idxerr_001.fits'
 ;idx_file='sandage_varZ_v4.1eq_spec_dcomb_idx_001.fits'
 ;spec_file='sandage_varZ_v4.1eq_spec_dcomb_001.fits'
 ;perterr_file='sandage_varZ_v4.1eq_spec_dcomb_perterr_001.fits'
 
-prefix_file='sandage_varZ_v4.1eq_spec_dcomb_'
-model_dir=getenv('SEDLIBRARIES_DIR')+'/Sandage_varZ_v4.1eq_bc03MILES_ChFall/'
+prefix_file='sandage_varZ_v4.1_m62fix_noburst_100k_spec_dcombnull_'
+model_dir=getenv('SEDLIBRARIES_DIR')+'/Sandage_v4.1_Zfix_noburst_bc03MILES_100k/'
 
 err_mag_005=0.05
 err_mag_003=0.03
@@ -22,14 +22,14 @@ seed=-10
   end_idx_file='idx_'+string(i_chunk, format='(I03)')+'.fits'
   end_spec_file=string(i_chunk, format='(I03)')+'.fits'
   ;end_perterr_file='perterr_H_'+string(i_chunk, format='(I03)')+'.fits'
-  end_perterr_file='perterr_H003_'+string(i_chunk, format='(I03)')+'.fits'
+  end_perterr_file='perterr_'+string(i_chunk, format='(I03)')+'.fits'
   ;end_perterr_file='perterr_'+string(i_chunk, format='(I03)')+'.fits'
   end_physpar_file=string(i_chunk, format='(I03)')+'_physpar'+'.fits'
   
   err_file=model_dir+prefix_file+end_err_file
   idx_file=model_dir+prefix_file+end_idx_file
   spec_file=model_dir+prefix_file+end_spec_file
-  perterr_file=model_dir+'mock_ER_001/'+prefix_file+end_perterr_file
+  perterr_file=model_dir+prefix_file+end_perterr_file
   physpar_file=model_dir+prefix_file+end_physpar_file
   
   ;stop

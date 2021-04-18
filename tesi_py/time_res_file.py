@@ -17,7 +17,7 @@ work_dir=os.getenv('HOME')+'/Desktop/TESI/models/Sandage_v4.1_Zfix_noburst_bc03M
 z_list=['32', '42', '52', '62', '72']
 N_z=np.size(z_list)
 n_chunks=5
-N_bins=40
+N_bins=30
 
 t=Table()
 
@@ -94,13 +94,13 @@ for z in range(0, N_z):
         
     
     d1090n50=np.log10((age10-age90)/age50)
-    bin_age50=np.histogram(np.log10(age50), bins=N_bins)[1]
+    bin_age50=np.histogram(np.log10(age50), bins=N_bins, range=(8.65, 10.15))[1]
     t_res=[0.0]*N_bins
     
-    for i in range(8, N_bins):
-        idx_ref=((d1090n50<-0.75)&(np.log10(age50)<bin_age50[i+1])& (np.log10(age50)>bin_age50[i]))
+    for i in range(0, N_bins):
+        idx_ref=((d1090n50<-1.00)&(np.log10(age50)<bin_age50[i+1])& (np.log10(age50)>bin_age50[i]))
         idx_sel=((np.log10(age50)<bin_age50[i+1])& (np.log10(age50)>bin_age50[i]))
-        t_res[i]=f_plt.chi_q_num(d1090n50,d4000n,hdhg,Hb,mg2fe,mgfep,mag_u-mag_r,mag_g-mag_r, mag_r-mag_i, mag_r-mag_z, idx_sel,idx_ref, toll=0.1, xmin=-1.0)
+        t_res[i]=f_plt.chi_q(d1090n50,d4000n,hdhg,Hb,mg2fe,mgfep,mag_u-mag_r,mag_g-mag_r, mag_r-mag_i, mag_r-mag_z, idx_sel,idx_ref, toll=0.0001, xmin=-1.50, mkplot=False)
     
     name_col='Log_d1090n50_min_z'+z_list[z]
     new_col=Column(t_res, name=name_col)
