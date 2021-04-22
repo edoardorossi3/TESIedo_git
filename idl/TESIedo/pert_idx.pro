@@ -1,11 +1,11 @@
 pro pert_idx, i_chunk
-i_chunk=1
+;i_chunk=1
 ;err_file='sandage_varZ_v4.1eq_spec_dcomb_idxerr_001.fits'
 ;idx_file='sandage_varZ_v4.1eq_spec_dcomb_idx_001.fits'
 ;spec_file='sandage_varZ_v4.1eq_spec_dcomb_001.fits'
 ;perterr_file='sandage_varZ_v4.1eq_spec_dcomb_perterr_001.fits'
 
-prefix_file='sandage_varZ_v4.1_m62fix_noburst_100k_spec_dcombnull_'
+prefix_file='sandage_varZ_v4.1_m72fix_noburst_100k_spec_dcombnull_'
 model_dir=getenv('SEDLIBRARIES_DIR')+'/Sandage_v4.1_Zfix_noburst_bc03MILES_100k/'
 
 err_mag_005=0.05
@@ -63,9 +63,15 @@ seed=-10
 
   data_table.abmag_u_pert=phys_table.abmag[0]+RND_mag_005
   data_table.abmag_g_pert=phys_table.abmag[1]+RND_mag_003
+  RND_mag_005=randomn(seed, n_models)*err_mag_005
+  RND_mag_003=randomn(seed, n_models)*err_mag_003
   data_table.abmag_r_pert=phys_table.abmag[2]+RND_mag_003
+  RND_mag_005=randomn(seed, n_models)*err_mag_005
+  RND_mag_003=randomn(seed, n_models)*err_mag_003
   data_table.abmag_i_pert=phys_table.abmag[3]+RND_mag_003
   data_table.abmag_z_pert=phys_table.abmag[4]+RND_mag_005
+  RND_mag_005=randomn(seed, n_models)*err_mag_005
+  RND_mag_003=randomn(seed, n_models)*err_mag_003
   data_table.abmag_H_pert=phys_table.abmag[6]+RND_mag_003
 
   ;stop
@@ -107,7 +113,7 @@ pro parall_pert_idx
   maxthreads=10 ; max number of parallel threads
   obridge=objarr(maxthreads)
   cur_chunk=intarr(maxthreads)
-  nchunks=40
+  nchunks=5
   nthreads=0 ; number of active threads
   i_chunk=0
   SNR=20.

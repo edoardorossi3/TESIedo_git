@@ -14,7 +14,7 @@ import astropy.io.fits as fits
 
 def bisection(f, t_min, t_max, toll):
     if f(t_min)*f(t_max)>=0:
-        return None
+        return np.nan
     while (t_max-t_min)>toll:
         t_m=(t_max+t_min)/2.0
         if f(t_min)*f(t_m)>0:
@@ -681,6 +681,8 @@ def chi_q(par,idx1, idx2, idx3, idx4, idx5, mag1, mag2, mag3, mag4, isel, iref,s
         sigma_mag3=np.sqrt(np.mean((mag3[iref]-mag3_ref)**2))
         sigma_mag4=np.sqrt(np.mean((mag4[iref]-mag4_ref)**2))
         
+        
+        
         #sigma_mag1=(f_plt.perc_84(mag1[iref])-f_plt.perc_16(mag1[iref]))/2.0
         #sigma_mag2=(f_plt.perc_84(mag2[iref])-f_plt.perc_16(mag2[iref]))/2.0
         #sigma_mag3=(f_plt.perc_84(mag3[iref])-f_plt.perc_16(mag3[iref]))/2.0
@@ -693,30 +695,46 @@ def chi_q(par,idx1, idx2, idx3, idx4, idx5, mag1, mag2, mag3, mag4, isel, iref,s
     chi_q=chi_q_idx+chi_q_mag
     
     bin_edges=np.histogram(par_sel, bins=bins)[1]
+    bin_size=bin_edges[1]-bin_edges[0]
+    
+    for i_bin in range(1, bins, 2):
+        bin_edges[i_bin]=bin_edges[i_bin]+bin_size*0.5
     
     #median_chi_idx=stats.binned_statistic(par_sel, chi_q_idx, statistic='median', bins=bins)
     median_chi_idx=f_plt.running_median(par_sel,chi_q_idx, bin_edges)
-    
+    p16_chi_idx=f_plt.running_perc(par_sel, chi_q_idx, bin_edges,16)
+    p84_chi_idx=f_plt.running_perc(par_sel, chi_q_idx, bin_edges,84)
+
     #median_chi_mag=stats.binned_statistic(par_sel, chi_q_mag, statistic='median', bins=bins)
     median_chi_mag=f_plt.running_median(par_sel,chi_q_mag, bin_edges)
-
+    p16_chi_mag=f_plt.running_perc(par_sel, chi_q_mag, bin_edges,16)
+    p84_chi_mag=f_plt.running_perc(par_sel, chi_q_mag, bin_edges,84)
     
     #median_chi=stats.binned_statistic(par_sel, chi_q, statistic='median', bins=bins)
     median_chi=f_plt.running_median(par_sel,chi_q, bin_edges)
-   
+    p16_chi=f_plt.running_perc(par_sel, chi_q, bin_edges,16)
+    p84_chi=f_plt.running_perc(par_sel, chi_q, bin_edges,84)
     
     idx_ref_chi=np.where(par_sel<val_ref)[0]
     median_chi_ref=np.median(chi_q[idx_ref_chi])
-    p84_chi_ref=f_plt.perc_84(chi_q[idx_ref_chi])
+    #p84_chi_ref=f_plt.perc_84(chi_q[idx_ref_chi])
     #p16_chi_ref=f_plt.perc_16(chi_q[idx_ref_chi])
     
     median_chi_ref_idx=np.median(chi_q_idx[idx_ref_chi])
-    p84_chi_ref_idx=f_plt.perc_84(chi_q_idx[idx_ref_chi])
+    #p84_chi_ref_idx=f_plt.perc_84(chi_q_idx[idx_ref_chi])
     #p16_chi_ref_idx=f_plt.perc_16(chi_q_idx[idx_ref_chi])
     
     median_chi_ref_mag=np.median(chi_q_mag[idx_ref_chi])
-    p84_chi_ref_mag=f_plt.perc_84(chi_q_mag[idx_ref_chi])
+    #p84_chi_ref_mag=f_plt.perc_84(chi_q_mag[idx_ref_chi])
     #p16_chi_ref_mag=f_plt.perc_16(chi_q_mag[idx_ref_chi])
+    
+    #upper_lim=stats.chi2.ppf(0.84, 9)
+    #upper_lim_idx=stats.chi2.ppf(0.84, 5)
+    #upper_lim_mag=stats.chi2.ppf(0.84,4)
+    
+    upper_lim=np.percentile(chi_q[idx_ref_chi],84)
+    upper_lim_idx=np.percentile(chi_q_idx[idx_ref_chi],84)
+    upper_lim_mag=np.percentile(chi_q_mag[idx_ref_chi],84)
     
     x=[0.0]*bins
     
@@ -727,11 +745,11 @@ def chi_q(par,idx1, idx2, idx3, idx4, idx5, mag1, mag2, mag3, mag4, isel, iref,s
         fig, axs=plt.subplots(1,3,figsize=figsize)
         axs[0].scatter(par_sel,(chi_q),s=1)
         axs[0].plot(x, (median_chi), color='red')
-        #axs[0].plot(chi_16.bin_edges[:-1], chi_16.statistic, color='red')
-        #axs[0].plot(chi_84.bin_edges[:-1], chi_84.statistic, color='red')
+        axs[0].plot(x, p16_chi, color='orange')
+        axs[0].plot(x, p84_chi, color='orange')
         
-        axs[0].plot([np.min(par_sel), np.max(par_sel)], [median_chi_ref, median_chi_ref], color='orange')
-        axs[0].plot([np.min(par_sel), np.max(par_sel)], [p84_chi_ref, p84_chi_ref],color='#ff028d')
+        axs[0].plot([np.min(par_sel), np.max(par_sel)], [median_chi_ref, median_chi_ref], color='red')
+        axs[0].plot([np.min(par_sel), np.max(par_sel)], [upper_lim, upper_lim],color='orange')
         #axs[0].plot([np.min(par_sel), np.max(par_sel)],[p16_chi_ref,p16_chi_ref], color='#ff028d')
         axs[0].set_yscale("log")
         
@@ -742,11 +760,11 @@ def chi_q(par,idx1, idx2, idx3, idx4, idx5, mag1, mag2, mag3, mag4, isel, iref,s
         
         axs[1].scatter(par_sel,(chi_q_idx),s=1)
         axs[1].plot(x, (median_chi_idx), color='red')
-        #axs[1].plot(chi_16_idx.bin_edges[:-1], chi_16_idx.statistic, color='red')
-        #axs[1].plot(chi_84_idx.bin_edges[:-1], chi_84_idx.statistic, color='red')
+        axs[1].plot(x, p16_chi_idx, color='orange')
+        axs[1].plot(x, p84_chi_idx, color='orange')
         
-        axs[1].plot([np.min(par_sel), np.max(par_sel)], [median_chi_ref_idx, median_chi_ref_idx], color='orange')
-        axs[1].plot([np.min(par_sel), np.max(par_sel)], [p84_chi_ref_idx, p84_chi_ref_idx],color='#ff028d')
+        axs[1].plot([np.min(par_sel), np.max(par_sel)], [median_chi_ref_idx, median_chi_ref_idx], color='red')
+        axs[1].plot([np.min(par_sel), np.max(par_sel)], [upper_lim_idx, upper_lim_idx],color='orange')
        # axs[1].plot([np.min(par_sel), np.max(par_sel)],[p16_chi_ref_idx,p16_chi_ref_idx], color='#ff028d')
         
     
@@ -759,11 +777,11 @@ def chi_q(par,idx1, idx2, idx3, idx4, idx5, mag1, mag2, mag3, mag4, isel, iref,s
         
         axs[2].scatter(par_sel,(chi_q_mag),s=1)
         axs[2].plot(x, (median_chi_mag), color='red')
-        #axs[2].plot(chi_16_mag.bin_edges[:-1], chi_16_mag.statistic, color='red')
-        #axs[2].plot(chi_84_mag.bin_edges[:-1], chi_84_mag.statistic, color='red')
+        axs[2].plot(x, p16_chi_mag, color='orange')
+        axs[2].plot(x, p84_chi_mag, color='orange')
         
-        axs[2].plot([np.min(par_sel), np.max(par_sel)], [median_chi_ref_mag, median_chi_ref_mag], color='orange')
-        axs[2].plot([np.min(par_sel), np.max(par_sel)], [p84_chi_ref_mag, p84_chi_ref_mag],color='#ff028d')
+        axs[2].plot([np.min(par_sel), np.max(par_sel)], [median_chi_ref_mag, median_chi_ref_mag], color='red')
+        axs[2].plot([np.min(par_sel), np.max(par_sel)], [upper_lim_mag, upper_lim_mag],color='orange')
         #axs[2].plot([np.min(par_sel), np.max(par_sel)],[p16_chi_ref_mag,p16_chi_ref_mag], color='#ff028d')
         
         axs[2].set_yscale("log")
@@ -780,14 +798,21 @@ def chi_q(par,idx1, idx2, idx3, idx4, idx5, mag1, mag2, mag3, mag4, isel, iref,s
     
     #inter_max=np.interp(xmax,x, median_chi.statistic)
     #inter_min=np.interp(xmin, x, median_chi.statistic)
-    inter_chi=lambda t: np.interp(t, x, median_chi-p84_chi_ref)
+    inter_chi=lambda t: np.interp(t, x, p16_chi-upper_lim)
+    inter_chi_idx=lambda t: np.interp(t, x, p16_chi_idx-upper_lim_idx)
+    inter_chi_mag=lambda t: np.interp(t, x, p16_chi_mag-upper_lim_mag)
+
     x_m=f_plt.bisection(inter_chi, xmin, xmax, toll)
-    
+    x_m_idx=f_plt.bisection(inter_chi_idx, xmin, xmax, toll)
+    x_m_mag=f_plt.bisection(inter_chi_mag, xmin, xmax, toll)
+
     if mkplot:
-        axs[0].scatter(x_m, inter_chi(x_m)+p84_chi_ref, s=20, color='red')
+        axs[0].scatter(x_m, inter_chi(x_m)+upper_lim, s=20, color='#ff028d')
     
-    print('d1090n50 limit:', x_m)
-    
+    print('d1090n50 limit tot:', x_m)
+    print('d1090n50 limit idx:', x_m_idx)
+    print('d1090n50 limit col:', x_m_mag)
+
     print('sigma_idx1:', sigma_idx1)
     print('sigma_idx2:', sigma_idx2)
     print('sigma_idx3:', sigma_idx3)
@@ -1075,25 +1100,32 @@ def chi_q_comp_col(par,idx1, idx2, idx3, idx4,isel, iref,val_ref=-1.00, name_par
     return fig
  
 
-def running_median(par,values,bin_edges, dx=0.5):
+def running_median(par,values,bin_edges):
     
     N_edges=np.size(bin_edges)
-    d_bin=dx*(bin_edges[1]-bin_edges[0])
     
     median=np.array([0.0]*(N_edges-1))
-    _i_sel=((par>bin_edges[0])&(par<(bin_edges[1]+d_bin)))
-    median[0]=np.median(values[_i_sel])
     
-    _i_sel=((par<bin_edges[N_edges-1])&(par>(bin_edges[N_edges-2]-d_bin)))
-    median[N_edges-2]=np.median(values[_i_sel])
     
-    for i_bin in range(1, N_edges-2):
-        _i_sel=((par>bin_edges[i_bin])&(par<(bin_edges[i_bin+1]+d_bin)))
+    for i_bin in range(0, N_edges-1):
+        _i_sel=((par>bin_edges[i_bin])&(par<(bin_edges[i_bin+1])))
         median[i_bin]=np.median(values[_i_sel])
         
     return median
         
+def running_perc(par,values,bin_edges,perc):
+    
+    N_edges=np.size(bin_edges)
+    
+    percentile=np.array([0.0]*(N_edges-1))
+    
+    
+    for i_bin in range(0, N_edges-1):
+        _i_sel=((par>bin_edges[i_bin])&(par<(bin_edges[i_bin+1])))
+        percentile[i_bin]=np.percentile(values[_i_sel], perc)
         
+    return percentile
+                
         
         
         
