@@ -25,7 +25,7 @@ t=Table()
 for z in range(0, N_z):
     idx_file=work_dir+'sandage_varZ_v4.1_m'+z_list[z]+'fix_noburst_100k_spec_dcombnull_idx_001.fits'
     par_file=work_dir+'sandage_varZ_v4.1_m'+z_list[z]+'fix_noburst_100k_spec_dcombnull_001_physpar_wagef.fits'
-    file_pert=work_dir+'sandage_varZ_v4.1_m'+z_list[z]+'fix_noburst_100k_spec_dcombnull_perterr_SNR50_001.fits'
+    file_pert=work_dir+'sandage_varZ_v4.1_m'+z_list[z]+'fix_noburst_100k_spec_dcombnull_perterr_SNR5_001.fits'
     
     
     hdul_idx=fits.open(idx_file)
@@ -63,7 +63,7 @@ for z in range(0, N_z):
     for i_chunks in range(2, n_chunks+1):
         _idx_file=work_dir+'sandage_varZ_v4.1_m'+z_list[z]+'fix_noburst_100k_spec_dcombnull_idx_{:03d}.fits'
         _par_file=work_dir+'sandage_varZ_v4.1_m'+z_list[z]+'fix_noburst_100k_spec_dcombnull_{:03d}_physpar_wagef.fits'
-        _pert_file=work_dir+'sandage_varZ_v4.1_m'+z_list[z]+'fix_noburst_100k_spec_dcombnull_perterr_SNR50_{:03d}.fits'
+        _pert_file=work_dir+'sandage_varZ_v4.1_m'+z_list[z]+'fix_noburst_100k_spec_dcombnull_perterr_SNR5_{:03d}.fits'
 
         
         _hdul_idx=fits.open(_idx_file.format(i_chunks))
@@ -137,7 +137,7 @@ for z in range(0, N_z):
     new_col=Column(t_res, name=name_col)
     t.add_column(new_col)
 
-new_file=work_dir+'Time_resol_Zfix_SNR50_tot.fits'
+new_file=work_dir+'Time_resol_Zfix_SNR5_col.fits'
 
 t.write(new_file, format='fits', overwrite=True)
     
