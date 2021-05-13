@@ -11,6 +11,11 @@ Created on Wed May 12 20:40:46 2021
 #suffix_physpar: suffix of the physpar file (up to and including dcomb)
 #n_chunks: number of physpar files
 
+#to use this program (from python terminal):
+    #import file_writer
+    #
+    #file_writer.file_wagef(...)
+
 def file_wagef(work_dir, f_name, suffix_physpar, n_chunks=40):  
     import numpy as np
     import astropy.io.fits as fits
