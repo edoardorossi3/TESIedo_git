@@ -48,7 +48,7 @@ def perc_16(z):
 
 def density_map_5p(x,y,par,mock_par,mock_err, par_name='', x_label='', y_label='', vmin=[], vmax=[], nx=3, ny=3, figsize=(5,10), s=0.01):
     import function_plot 
-    
+    from matplotlib.transforms import Bbox
     #nan_par=np.isnan(par)
     #nonan_par= ~nan_par
     #par=par[nonan_par]
@@ -67,28 +67,33 @@ def density_map_5p(x,y,par,mock_par,mock_err, par_name='', x_label='', y_label='
     
     density_in=stats.binned_statistic_2d(x_fin, y_fin, par,bins=50, statistic='count')
     
-    median_par=stats.binned_statistic_2d(x_fin, y_fin, par, bins=50, statistic='median')
-    rms_1684_par=stats.binned_statistic_2d(x_fin, y_fin, par, bins=50, statistic=function_plot.rms_1684)
+    mean_par=stats.binned_statistic_2d(x_fin, y_fin, par, bins=50, statistic='mean')
+    std_par=stats.binned_statistic_2d(x_fin, y_fin, par, bins=50, statistic='std')
+    std_par=np.where(std_par.statistic==0, np.nan, std_par.statistic)
+    
     p16_par=stats.binned_statistic_2d(x_fin, y_fin, par, bins=50, statistic=function_plot.perc_16)
     p84_par=stats.binned_statistic_2d(x_fin, y_fin, par, bins=50, statistic=function_plot.perc_84)
 
-    median_mock=stats.binned_statistic_2d(x_fin, y_fin, mock_par, bins=50, statistic='median')
-    rms_1684_mock=stats.binned_statistic_2d(x_fin, y_fin, mock_par, bins=50, statistic=function_plot.rms_1684)
+    mean_mock=stats.binned_statistic_2d(x_fin, y_fin, mock_par, bins=50, statistic='mean')
+    std_mock=stats.binned_statistic_2d(x_fin, y_fin, mock_par, bins=50, statistic='std')
+    std_mock=np.where(std_mock.statistic==0, np.nan, std_mock.statistic)
+
     p16_mock=stats.binned_statistic_2d(x_fin, y_fin, mock_par, bins=50, statistic=function_plot.perc_16)
     p84_mock=stats.binned_statistic_2d(x_fin, y_fin, mock_par, bins=50, statistic=function_plot.perc_84)
 
-    y_g, x_g=np.meshgrid(median_par.y_edge, median_par.x_edge)
-    bias_par=stats.binned_statistic_2d(x_fin, y_fin, (mock_par-par), bins=50, statistic='median')
-    rms_1684_bias=stats.binned_statistic_2d(x_fin, y_fin, (mock_par-par), bins=50, statistic=function_plot.rms_1684)
+    y_g, x_g=np.meshgrid(mean_par.y_edge, mean_par.x_edge)
+    bias_par=stats.binned_statistic_2d(x_fin, y_fin, (mock_par-par), bins=50, statistic='mean')
+    mean2diff_bias=(stats.binned_statistic_2d(x_fin, y_fin, (mock_par-par)**2, bins=50, statistic='mean'))
     
-    median_bayes_err=stats.binned_statistic_2d(x_fin,y_fin,mock_err, bins=50, statistic='median')
+    
+    median_bayes_err=stats.binned_statistic_2d(x_fin,y_fin,mock_err, bins=50, statistic='mean')
     err_norm=stats.binned_statistic_2d(x_fin,y_fin,(mock_par-par)/(mock_err), bins=50, statistic=function_plot.rms_1684)
     
-    running_med_in=stats.binned_statistic(par, par, bins=50, statistic='median') 
+    running_med_in=stats.binned_statistic(par, par, bins=50, statistic='mean') 
     #running_p16_in=stats.binned_statistic(par, par, bins=20, statistic=function_plot.perc_16) 
     #running_p84_in=stats.binned_statistic(par, par, bins=20, statistic=function_plot.perc_84) 
 
-    running_med_out=stats.binned_statistic(par, mock_par, bins=50, statistic='median')
+    running_med_out=stats.binned_statistic(par, mock_par, bins=50, statistic='mean')
     #running_p16_out=stats.binned_statistic(mock_par, mock_par, bins=20, statistic=function_plot.perc_16)
     #running_p84_out=stats.binned_statistic(mock_par, mock_par, bins=20, statistic=function_plot.perc_84)
     
@@ -97,8 +102,8 @@ def density_map_5p(x,y,par,mock_par,mock_err, par_name='', x_label='', y_label='
     #perc_16_in=stats.binned_statistic((par),(par), statistic=function_plot.perc_16, bins=50)
     #perc_16_out=stats.binned_statistic((par),(mock_par), statistic=function_plot.perc_16, bins=50)
 
-    median_in=np.reshape(median_par.statistic, -1)
-    median_out=np.reshape(median_mock.statistic, -1)
+    mean_in=np.reshape(mean_par.statistic, -1)
+    mean_out=np.reshape(mean_mock.statistic, -1)
     
     perc_84_in=np.reshape(p84_par.statistic, -1)
     perc_84_out=np.reshape(p84_mock.statistic, -1)
@@ -107,73 +112,96 @@ def density_map_5p(x,y,par,mock_par,mock_err, par_name='', x_label='', y_label='
     
     
     fig1,axs1=plt.subplots(ny,nx,figsize=figsize)
+    #plt.tight_layout(pad=2, h_pad=2, w_pad=2)
     
-    _im=axs1[0,0].pcolormesh(x_g, y_g, median_par.statistic, cmap=cm.gist_rainbow, vmin=vmin[0], vmax=vmax[0])
-    fig1.colorbar(_im, ax=axs1[0,0])
-    axs1[0,0].set_title(par_name)
+    _im=axs1[0,0].pcolormesh(x_g, y_g, mean_par.statistic, cmap=cm.nipy_spectral, vmin=vmin[0], vmax=vmax[0])
+    cbar=fig1.colorbar(_im, ax=axs1[0,0])
+    cbar.set_label(r'$<$'+par_name+r'$_{in}>$', fontsize=16)
+    #axs1[0,0].set_title('mean in')
+    axs1[0,0].set_facecolor('#d8dcd6')
+
+    _im=axs1[0,1].pcolormesh(x_g, y_g, std_par, cmap=cm.gnuplot2, vmin=vmin[1], vmax=vmax[1])
+    cbar=fig1.colorbar(_im, ax=axs1[0,1])
+    cbar.set_label(r'$r.m.s._{in}$', fontsize=16)
+    #axs1[0,1].set_title('std in')
+    axs1[0,1].set_facecolor('#d8dcd6')
+
+    tmp=density_in.statistic
+    tmp=np.where(tmp==0, np.nan, tmp)
+    _im=axs1[0,2].pcolormesh(x_g, y_g, tmp, cmap=cm.copper_r)
+    cbar=fig1.colorbar(_im, ax=axs1[0,2])
+    cbar.set_label(r'$models_{in}$', fontsize=16)
+    axs1[0,2].set_facecolor('#d8dcd6')
+    #axs1[0,2].set_title('models density in')
     
-    _im=axs1[0,1].pcolormesh(x_g, y_g, rms_1684_par.statistic, cmap=cm.gist_rainbow, vmin=vmin[1], vmax=vmax[1])
-    fig1.colorbar(_im, ax=axs1[0,1])
-    axs1[0,1].set_title(par_name+'_rms1684')
+    _im=axs1[1,0].pcolormesh(x_g, y_g, mean_mock.statistic, cmap=cm.nipy_spectral, vmin=vmin[0], vmax=vmax[0])
+    cbar=fig1.colorbar(_im, ax=axs1[1,0])
+    cbar.set_label(r'$<$'+par_name+r'$_{out}>$', fontsize=16)
+    axs1[1,0].set_facecolor('#d8dcd6')
+    #axs1[1,0].set_title('mean out')
     
-    _im=axs1[0,2].pcolormesh(x_g, y_g, density_in.statistic, cmap=cm.binary)
-    fig1.colorbar(_im, ax=axs1[0,2])
-    axs1[0,2].set_title(par_name+'_density')
+    _im=axs1[1,1].pcolormesh(x_g, y_g, std_mock, cmap=cm.gnuplot2, vmin=vmin[1], vmax=vmax[1])
+    cbar=fig1.colorbar(_im, ax=axs1[1,1])
+    cbar.set_label(r'$r.m.s._{out}$', fontsize=16)
+    axs1[1,1].set_facecolor('#d8dcd6')
+    #axs1[1,1].set_title('std out')
     
-    _im=axs1[1,0].pcolormesh(x_g, y_g, median_mock.statistic, cmap=cm.gist_rainbow, vmin=vmin[0], vmax=vmax[0])
-    fig1.colorbar(_im, ax=axs1[1,0])
-    axs1[1,0].set_title(par_name+'_mock')
-    
-    _im=axs1[1,1].pcolormesh(x_g, y_g, rms_1684_mock.statistic, cmap=cm.gist_rainbow, vmin=vmin[1], vmax=vmax[1])
-    fig1.colorbar(_im, ax=axs1[1,1])
-    axs1[1,1].set_title(par_name+'_mock_rms1684')
-    
-    axs1[1,2].errorbar(median_in, median_out,marker='o', xerr=(perc_84_in-perc_16_in)/2.0, yerr=(perc_84_out-perc_16_out)/2.0, linestyle='None', elinewidth=0.5, ms=s)
+    axs1[1,2].errorbar(mean_in, mean_out,marker='o', xerr=(perc_84_in-perc_16_in)/2.0, yerr=(perc_84_out-perc_16_out)/2.0, linestyle='None', elinewidth=0.5, ms=s)
     axs1[1,2].plot([np.min(par), np.max(par)], [np.min(par), np.max(par)], color='red')
-    
-    _im=axs1[2,0].pcolormesh(x_g, y_g, bias_par.statistic, cmap=cm.Spectral, vmin=vmin[2], vmax=vmax[2])
-    fig1.colorbar(_im, ax=axs1[2,0])
-    axs1[2,0].set_title(par_name+'_bias_out-in')
+    pos=axs1[1,2].get_position()
+    pos_new=Bbox([[pos.xmin, pos.ymin], [pos.xmax-0.045, pos.ymax]])
+    axs1[1,2].set_position(pos_new)
+    axs1[1,2].set_facecolor('#d8dcd6')
+
+    _im=axs1[2,0].pcolormesh(x_g, y_g, bias_par.statistic, cmap=cm.nipy_spectral, vmin=vmin[2], vmax=vmax[2])
+    cbar=fig1.colorbar(_im, ax=axs1[2,0])
+    cbar.set_label(r'$<out-in>$', fontsize=16)
+    #axs1[2,0].set_title('mean out-in')
     axs1[2,0].set_facecolor('#d8dcd6')
     
-    _im=axs1[2,1].pcolormesh(x_g, y_g, rms_1684_bias.statistic, cmap=cm.hot, vmin=vmin[3], vmax=vmax[3])
-    fig1.colorbar(_im, ax=axs1[2,1])
+    _im=axs1[2,1].pcolormesh(x_g, y_g, np.sqrt(mean2diff_bias.statistic), cmap=cm.gnuplot2, vmin=vmin[3], vmax=vmax[3])
+    cbar=fig1.colorbar(_im, ax=axs1[2,1])
+    cbar.set_label(r'$\sqrt{<(out-in)^2>}$', fontsize=16)
     axs1[2,1].set_facecolor('#d8dcd6')
-    axs1[2,1].set_title(par_name+'_rms1684_out-in')
+    #axs1[2,1].set_title(r'$\sqrt{mean_{out-in}^2+std_{out-in}}$')
     
-    _im=axs1[2,2].pcolormesh(x_g, y_g, median_bayes_err.statistic, cmap=cm.hot, vmin=vmin[4], vmax=vmax[4])
-    fig1.colorbar(_im, ax=axs1[2,2])
+    _im=axs1[2,2].pcolormesh(x_g, y_g, median_bayes_err.statistic, cmap=cm.gnuplot2, vmin=vmin[4], vmax=vmax[4])
+    cbar=fig1.colorbar(_im, ax=axs1[2,2])
+    cbar.set_label(r'$err_{bayes}$', fontsize=16)
     axs1[2,2].set_facecolor('#d8dcd6')
-    axs1[2,2].set_title(par_name+'_err_bayes')
+    #axs1[2,2].set_title('err bayes')
     
     #axs1[0,1].axis('off')
     #axs1[0,2].axis('off')
     
     
-    axs1[2,2].set_xlabel(x_label)
-    axs1[2,2].set_ylabel(y_label)
+    axs1[2,2].set_xlabel(x_label, size=14)
+    axs1[2,2].set_ylabel(y_label, size=14)
 
-    axs1[2,0].set_xlabel(par_name)
-    axs1[0,2].set_xlabel(par_name)
+    axs1[2,0].set_xlabel(x_label, size=14)
+    axs1[1,2].set_xlabel(par_name+r'$_{in}$', size=14)
 
-    axs1[0,0].set_ylabel(y_label)
-    axs1[0,0].set_xlabel(x_label)
+    axs1[0,0].set_ylabel(y_label, size=14)
+    axs1[0,0].set_xlabel(x_label, size=14)
     
-    axs1[0,1].set_ylabel(y_label)
-    axs1[0,1].set_xlabel(x_label)
+    axs1[0,1].set_ylabel(y_label, size=14)
+    axs1[0,1].set_xlabel(x_label, size=14)
     
-    axs1[1,1].set_ylabel(y_label)
-    axs1[1,1].set_xlabel(x_label)
+    axs1[1,1].set_ylabel(y_label, size=14)
+    axs1[1,1].set_xlabel(x_label, size=14)
     
-    axs1[1,2].set_ylabel(y_label)
-    axs1[1,2].set_xlabel(x_label)
+    axs1[0,2].set_ylabel(y_label, size=14)
+    axs1[0,2].set_xlabel(x_label, size=14)
     
-    axs1[1,0].set_ylabel('fraction of model')
-    axs1[2,1].set_xlabel(x_label)
-    axs1[2,1].set_ylabel(y_label)
+    axs1[1,0].set_ylabel(y_label, size=14)
+    axs1[1,0].set_xlabel(x_label, size=14)
 
-    axs1[2,0].set_ylabel(par_name+'_mock')
-    axs1[0,2].set_ylabel(par_name+'_mock')
+    axs1[2,1].set_xlabel(x_label, size=14)
+    axs1[2,1].set_ylabel(y_label, size=14)
+
+    axs1[2,0].set_ylabel(y_label, size=14)
+    axs1[1,2].set_ylabel(par_name+r'$_{out}$', size=14)
+    
     
     return fig1
 
@@ -713,6 +741,9 @@ def chi_q(par,idx1, idx2, idx3, idx4, idx5, mag1, mag2, mag3, mag4, isel, iref,s
     
     chi_q_idx=((idx1_sel-idx1_ref)/sigma_idx1)**2+((idx2_sel-idx2_ref)/sigma_idx2)**2+((idx3_sel-idx3_ref)/sigma_idx3)**2+((idx4_sel-idx4_ref)/sigma_idx4)**2+((idx5_sel-idx5_ref)/sigma_idx5)**2
     chi_q_mag=((mag1_sel-mag1_ref)/sigma_mag1)**2+((mag2_sel-mag2_ref)/sigma_mag2)**2+((mag3_sel-mag3_ref)/sigma_mag3)**2+((mag4_sel-mag4_ref)/sigma_mag4)**2
+    
+    chi_q_balmer=((idx1_sel-idx1_ref)/sigma_idx1)**2+((idx2_sel-idx2_ref)/sigma_idx2)**2+((idx3_sel-idx3_ref)/sigma_idx3)**2
+    chi_q_mgfe=((idx4_sel-idx4_ref)/sigma_idx4)**2+((idx5_sel-idx5_ref)/sigma_idx5)**2
 
     chi_q=chi_q_idx+chi_q_mag
     
@@ -726,6 +757,9 @@ def chi_q(par,idx1, idx2, idx3, idx4, idx5, mag1, mag2, mag3, mag4, isel, iref,s
     median_chi_idx=f_plt.running_median(par_sel,chi_q_idx, bin_edges)
     p16_chi_idx=f_plt.running_perc(par_sel, chi_q_idx, bin_edges,16)
     p84_chi_idx=f_plt.running_perc(par_sel, chi_q_idx, bin_edges,84)
+
+    p16_chi_balmer=f_plt.running_perc(par_sel, chi_q_balmer, bin_edges,16)
+    p16_chi_mgfe=f_plt.running_perc(par_sel, chi_q_mgfe, bin_edges,16)
 
     #median_chi_mag=stats.binned_statistic(par_sel, chi_q_mag, statistic='median', bins=bins)
     median_chi_mag=f_plt.running_median(par_sel,chi_q_mag, bin_edges)
@@ -758,6 +792,9 @@ def chi_q(par,idx1, idx2, idx3, idx4, idx5, mag1, mag2, mag3, mag4, isel, iref,s
     upper_lim_idx=np.percentile(chi_q_idx[idx_ref_chi],84)
     upper_lim_mag=np.percentile(chi_q_mag[idx_ref_chi],84)
     
+    upper_lim_balmer=np.percentile(chi_q_balmer[idx_ref_chi],84)
+    upper_lim_mgfe=np.percentile(chi_q_mgfe[idx_ref_chi],84)
+
     x=[0.0]*bins
     
     for i in range(0,bins):
@@ -823,10 +860,14 @@ def chi_q(par,idx1, idx2, idx3, idx4, idx5, mag1, mag2, mag3, mag4, isel, iref,s
     inter_chi=lambda t: np.interp(t, x, p16_chi-upper_lim)
     inter_chi_idx=lambda t: np.interp(t, x, p16_chi_idx-upper_lim_idx)
     inter_chi_mag=lambda t: np.interp(t, x, p16_chi_mag-upper_lim_mag)
+    inter_chi_balmer=lambda t: np.interp(t, x, p16_chi_balmer-upper_lim_balmer)
+    inter_chi_mgfe=lambda t: np.interp(t, x, p16_chi_mgfe-upper_lim_mgfe)
 
     x_m=f_plt.bisection(inter_chi, xmin, xmax, toll)
     x_m_idx=f_plt.bisection(inter_chi_idx, xmin, xmax, toll)
     x_m_mag=f_plt.bisection(inter_chi_mag, xmin, xmax, toll)
+    x_m_balmer=f_plt.bisection(inter_chi_balmer, xmin, xmax, toll)
+    x_m_mgfe=f_plt.bisection(inter_chi_mgfe, xmin, xmax, toll)
 
     if mkplot:
         axs[0].scatter(x_m, inter_chi(x_m)+upper_lim, s=20, color='#ff028d')
@@ -848,7 +889,7 @@ def chi_q(par,idx1, idx2, idx3, idx4, idx5, mag1, mag2, mag3, mag4, isel, iref,s
     if mkplot:
         return fig, x_m
     else:
-        return x_m_mag
+        return x_m_mgfe
 
 
 
@@ -1163,8 +1204,8 @@ def scatter_hist(par1, par2, bins=50, figsize=(10,10), s=1, name_par=''):
     
     histx.hist((par1), bins=bins)
     histy.hist((par2), bins=bins, orientation='horizontal')
-    axs.set_xlabel(name_par+'_in')
-    axs.set_ylabel(name_par+'_out')
+    axs.set_xlabel(name_par+r'$_{in}$', size=16)
+    axs.set_ylabel(name_par+r'$_{out}$', size=16)
     
     return fig
            

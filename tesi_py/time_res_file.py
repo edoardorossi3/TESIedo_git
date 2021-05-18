@@ -137,7 +137,7 @@ for z in range(0, N_z):
     new_col=Column(t_res, name=name_col)
     t.add_column(new_col)
 
-new_file=work_dir+'Time_resol_Zfix_SNR5_col.fits'
+new_file=work_dir+'Time_resol_Zfix_SNR5_mgfe.fits'
 
 t.write(new_file, format='fits', overwrite=True)
     

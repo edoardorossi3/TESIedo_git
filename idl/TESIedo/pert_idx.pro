@@ -1,12 +1,12 @@
 pro pert_idx, i_chunk
-;i_chunk=1
+i_chunk=1
 ;err_file='sandage_varZ_v4.1eq_spec_dcomb_idxerr_001.fits'
 ;idx_file='sandage_varZ_v4.1eq_spec_dcomb_idx_001.fits'
 ;spec_file='sandage_varZ_v4.1eq_spec_dcomb_001.fits'
 ;perterr_file='sandage_varZ_v4.1eq_spec_dcomb_perterr_001.fits'
 
-prefix_file='sandage_varZ_v4.1_m72fix_noburst_100k_spec_dcombnull_'
-model_dir=getenv('SEDLIBRARIES_DIR')+'/Sandage_v4.1_Zfix_noburst_bc03MILES_100k/'
+prefix_file='sandage_varZ_v4.2eq_spec_dcomb0p25null_'
+model_dir=getenv('SEDLIBRARIES_DIR')+'/Sandage_varZ_v4.2eq_CB16MILES_ChFall/'
 
 err_mag_005=0.05
 err_mag_003=0.03
@@ -22,7 +22,7 @@ seed=-10
   end_idx_file='idx_'+string(i_chunk, format='(I03)')+'.fits'
   end_spec_file=string(i_chunk, format='(I03)')+'.fits'
   ;end_perterr_file='perterr_H_'+string(i_chunk, format='(I03)')+'.fits'
-  end_perterr_file='perterr_'+string(i_chunk, format='(I03)')+'.fits'
+  end_perterr_file='perterr_SNR500_'+string(i_chunk, format='(I03)')+'.fits'
   ;end_perterr_file='perterr_'+string(i_chunk, format='(I03)')+'.fits'
   end_physpar_file=string(i_chunk, format='(I03)')+'_physpar'+'.fits'
   
@@ -86,8 +86,9 @@ seed=-10
     n_colerrout=n_colpert+1
     _tmp200=idxwerr_table[*].(n_col200)
     _tmperr=idxwerr_table[*].(n_colerr)
+    _tmperr=(_tmperr/25.0)
     if (strcmp(idx_names[i_idx], 'D4000N', /fold_case)) then _tmperr=sqrt(_tmperr^2+Flux_calib_err^2)
-    RND=randomn(seed, n_models)*_tmperr
+    RND=randomn(seed, n_models)*(_tmperr)
     data_table[*].(n_colpert)=_tmp200+RND
     data_table[*].(n_colerrout)=_tmperr
     
