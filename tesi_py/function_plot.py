@@ -46,9 +46,10 @@ def perc_16(z):
 
 #density_map_5p is a thesis format...
 
-def density_map_5p(x,y,par,mock_par,mock_err, par_name='', x_label='', y_label='', vmin=[], vmax=[], nx=3, ny=3, figsize=(5,10), s=0.01):
+def density_map_5p(x,y,par,mock_par,mock_err,x_err, y_err, par_name='', x_label='', y_label='', vmin=[], vmax=[], nx=3, ny=3, figsize=(5,10), s=0.01, N_bins=50, statistic=False):
     import function_plot 
     from matplotlib.transforms import Bbox
+    from astropy.visualization import simple_norm
     #nan_par=np.isnan(par)
     #nonan_par= ~nan_par
     #par=par[nonan_par]
@@ -63,37 +64,39 @@ def density_map_5p(x,y,par,mock_par,mock_err, par_name='', x_label='', y_label='
     x_fin=x[idx_fin]
     y_fin=y[idx_fin]
     idx_nofin= ~idx_fin
+    
+    err_x, err_y=function_plot.ellipse(np.mean(x_err), np.mean(y_err), x_c=np.percentile(x,84), y_c=np.percentile(y, 84))
     print('total deleted (no finite values):', np.sum(idx_nofin))
     
-    density_in=stats.binned_statistic_2d(x_fin, y_fin, par,bins=50, statistic='count')
+    density_in=stats.binned_statistic_2d(x_fin, y_fin, par,bins=N_bins, statistic='count')
     
-    mean_par=stats.binned_statistic_2d(x_fin, y_fin, par, bins=50, statistic='mean')
-    std_par=stats.binned_statistic_2d(x_fin, y_fin, par, bins=50, statistic='std')
+    mean_par=stats.binned_statistic_2d(x_fin, y_fin, par, bins=N_bins, statistic='mean', expand_binnumbers=True)
+    std_par=stats.binned_statistic_2d(x_fin, y_fin, par, bins=N_bins, statistic='std')
     std_par=np.where(std_par.statistic==0, np.nan, std_par.statistic)
     
-    p16_par=stats.binned_statistic_2d(x_fin, y_fin, par, bins=50, statistic=function_plot.perc_16)
-    p84_par=stats.binned_statistic_2d(x_fin, y_fin, par, bins=50, statistic=function_plot.perc_84)
+    p16_par=stats.binned_statistic_2d(x_fin, y_fin, par, bins=N_bins, statistic=function_plot.perc_16)
+    p84_par=stats.binned_statistic_2d(x_fin, y_fin, par, bins=N_bins, statistic=function_plot.perc_84)
 
-    mean_mock=stats.binned_statistic_2d(x_fin, y_fin, mock_par, bins=50, statistic='mean')
-    std_mock=stats.binned_statistic_2d(x_fin, y_fin, mock_par, bins=50, statistic='std')
+    mean_mock=stats.binned_statistic_2d(x_fin, y_fin, mock_par, bins=N_bins, statistic='mean')
+    std_mock=stats.binned_statistic_2d(x_fin, y_fin, mock_par, bins=N_bins, statistic='std')
     std_mock=np.where(std_mock.statistic==0, np.nan, std_mock.statistic)
 
-    p16_mock=stats.binned_statistic_2d(x_fin, y_fin, mock_par, bins=50, statistic=function_plot.perc_16)
-    p84_mock=stats.binned_statistic_2d(x_fin, y_fin, mock_par, bins=50, statistic=function_plot.perc_84)
+    p16_mock=stats.binned_statistic_2d(x_fin, y_fin, mock_par, bins=N_bins, statistic=function_plot.perc_16)
+    p84_mock=stats.binned_statistic_2d(x_fin, y_fin, mock_par, bins=N_bins, statistic=function_plot.perc_84)
 
     y_g, x_g=np.meshgrid(mean_par.y_edge, mean_par.x_edge)
-    bias_par=stats.binned_statistic_2d(x_fin, y_fin, (mock_par-par), bins=50, statistic='mean')
-    mean2diff_bias=(stats.binned_statistic_2d(x_fin, y_fin, (mock_par-par)**2, bins=50, statistic='mean'))
+    bias_par=stats.binned_statistic_2d(x_fin, y_fin, (mock_par-par), bins=N_bins, statistic='mean')
+    mean2diff_bias=(stats.binned_statistic_2d(x_fin, y_fin, (mock_par-par)**2, bins=N_bins, statistic='mean'))
     
     
-    median_bayes_err=stats.binned_statistic_2d(x_fin,y_fin,mock_err, bins=50, statistic='mean')
-    err_norm=stats.binned_statistic_2d(x_fin,y_fin,(mock_par-par)/(mock_err), bins=50, statistic=function_plot.rms_1684)
+    median_bayes_err=stats.binned_statistic_2d(x_fin,y_fin,mock_err, bins=N_bins, statistic='mean')
+    err_norm=stats.binned_statistic_2d(x_fin,y_fin,(mock_par-par)/(mock_err), bins=N_bins, statistic=function_plot.rms_1684)
     
-    running_med_in=stats.binned_statistic(par, par, bins=50, statistic='mean') 
+    running_med_in=stats.binned_statistic(par, par, bins=N_bins, statistic='mean') 
     #running_p16_in=stats.binned_statistic(par, par, bins=20, statistic=function_plot.perc_16) 
     #running_p84_in=stats.binned_statistic(par, par, bins=20, statistic=function_plot.perc_84) 
 
-    running_med_out=stats.binned_statistic(par, mock_par, bins=50, statistic='mean')
+    running_med_out=stats.binned_statistic(par, mock_par, bins=N_bins, statistic='mean')
     #running_p16_out=stats.binned_statistic(mock_par, mock_par, bins=20, statistic=function_plot.perc_16)
     #running_p84_out=stats.binned_statistic(mock_par, mock_par, bins=20, statistic=function_plot.perc_84)
     
@@ -112,99 +115,154 @@ def density_map_5p(x,y,par,mock_par,mock_err, par_name='', x_label='', y_label='
     
     
     fig1,axs1=plt.subplots(ny,nx,figsize=figsize)
+    
+    for ix in range(0,3):
+        for iy in range(0,3):
+            axs1[ix, iy].tick_params(labelsize=14)
+
     #plt.tight_layout(pad=2, h_pad=2, w_pad=2)
     
-    _im=axs1[0,0].pcolormesh(x_g, y_g, mean_par.statistic, cmap=cm.nipy_spectral, vmin=vmin[0], vmax=vmax[0])
+    _im=axs1[0,0].pcolormesh(x_g, y_g, mean_par.statistic, cmap=cm.gnuplot2, vmin=vmin[0], vmax=vmax[0])
     cbar=fig1.colorbar(_im, ax=axs1[0,0])
-    cbar.set_label(r'$<$'+par_name+r'$_{in}>$', fontsize=16)
+    cbar.set_label(r'$<$'+par_name+r'$_{in}>$', fontsize=20)
+    cbar.ax.tick_params(labelsize=18)
     #axs1[0,0].set_title('mean in')
     axs1[0,0].set_facecolor('#d8dcd6')
-
-    _im=axs1[0,1].pcolormesh(x_g, y_g, std_par, cmap=cm.gnuplot2, vmin=vmin[1], vmax=vmax[1])
+    axs1[0,0].plot(err_x, err_y, color='red')
+    
+    norm=simple_norm(std_par, 'asinh',min_cut=vmin[1], max_cut=vmax[1])
+    _im=axs1[0,1].pcolormesh(x_g, y_g, std_par, cmap=cm.nipy_spectral, norm=norm)
     cbar=fig1.colorbar(_im, ax=axs1[0,1])
-    cbar.set_label(r'$r.m.s._{in}$', fontsize=16)
+    cbar.set_label(r'$r.m.s._{in}$', fontsize=20)
+    cbar.ax.tick_params(labelsize=18)
     #axs1[0,1].set_title('std in')
     axs1[0,1].set_facecolor('#d8dcd6')
+    axs1[0,1].plot(err_x, err_y, color='red')
 
     tmp=density_in.statistic
     tmp=np.where(tmp==0, np.nan, tmp)
     _im=axs1[0,2].pcolormesh(x_g, y_g, tmp, cmap=cm.copper_r)
     cbar=fig1.colorbar(_im, ax=axs1[0,2])
-    cbar.set_label(r'$models_{in}$', fontsize=16)
+    cbar.set_label(r'$models_{in}$', fontsize=20)
+    cbar.ax.tick_params(labelsize=18)
     axs1[0,2].set_facecolor('#d8dcd6')
-    #axs1[0,2].set_title('models density in')
+    axs1[0,2].plot(err_x, err_y, color='red')
     
-    _im=axs1[1,0].pcolormesh(x_g, y_g, mean_mock.statistic, cmap=cm.nipy_spectral, vmin=vmin[0], vmax=vmax[0])
+    _im=axs1[1,0].pcolormesh(x_g, y_g, mean_mock.statistic, cmap=cm.gnuplot2, vmin=vmin[0], vmax=vmax[0])
     cbar=fig1.colorbar(_im, ax=axs1[1,0])
-    cbar.set_label(r'$<$'+par_name+r'$_{out}>$', fontsize=16)
+    cbar.set_label(r'$<$'+par_name+r'$_{out}>$', fontsize=20)
+    cbar.ax.tick_params(labelsize=18)
     axs1[1,0].set_facecolor('#d8dcd6')
-    #axs1[1,0].set_title('mean out')
-    
-    _im=axs1[1,1].pcolormesh(x_g, y_g, std_mock, cmap=cm.gnuplot2, vmin=vmin[1], vmax=vmax[1])
+    axs1[1,0].plot(err_x, err_y, color='red')
+        
+    norm=simple_norm(std_mock, 'asinh', min_cut=vmin[1], max_cut=vmax[1])
+    _im=axs1[1,1].pcolormesh(x_g, y_g, std_mock, cmap=cm.nipy_spectral, norm=norm)
     cbar=fig1.colorbar(_im, ax=axs1[1,1])
-    cbar.set_label(r'$r.m.s._{out}$', fontsize=16)
+    cbar.set_label(r'$r.m.s._{out}$', fontsize=20)
+    cbar.ax.tick_params(labelsize=18)
     axs1[1,1].set_facecolor('#d8dcd6')
-    #axs1[1,1].set_title('std out')
+    axs1[1,1].plot(err_x, err_y, color='red')
     
-    axs1[1,2].errorbar(mean_in, mean_out,marker='o', xerr=(perc_84_in-perc_16_in)/2.0, yerr=(perc_84_out-perc_16_out)/2.0, linestyle='None', elinewidth=0.5, ms=s)
-    axs1[1,2].plot([np.min(par), np.max(par)], [np.min(par), np.max(par)], color='red')
+    
+    #axs1[1,2].errorbar(mean_in, mean_out,marker='o', xerr=(perc_84_in-perc_16_in)/2.0, yerr=(perc_84_out-perc_16_out)/2.0, linestyle='None', elinewidth=0.5, ms=s)
+    
+
+   
+    for ix in range(0, N_bins):
+        for iy in range(0, N_bins):
+            _idx_sel=np.where((x>mean_par.x_edge[ix])&(x<mean_par.x_edge[ix+1])&(y>mean_par.y_edge[iy])&(y<mean_par.y_edge[iy+1]))[0]
+            _par=par[_idx_sel]
+            _mock_par=mock_par[_idx_sel]
+            if (np.size(_idx_sel)>5):
+                cov=np.cov(_par, _mock_par)
+                pearson=stats.pearsonr(_par, _mock_par)[0]
+                #print(_idx_sel)
+                #print(ix, iy,cov)
+                eig_val, eig_vec=np.linalg.eig(cov)
+                v0=eig_vec[:,0]
+                v1=eig_vec[:,1]
+                phi=np.arctan(v0[1]/v0[0])
+                x_ell, y_ell=function_plot.ellipse(np.sqrt(eig_val[0]),np.sqrt(eig_val[1]), -phi, x_c=np.mean(_par), y_c=np.mean(_mock_par))
+                axs1[1,2].scatter(np.mean(_par), np.mean(_mock_par),marker="X", color='red', s=0.1)
+                #axs1[1,2].plot([np.mean(_par), np.mean(_par)+np.sqrt(eig_val[0])*np.cos(phi)], [np.mean(_mock_par), np.mean(_mock_par)+np.sqrt(eig_val[0])*np.sin(phi)],linewidth=0.05, color='red')
+                #axs1[1,2].plot([np.mean(_par), np.mean(_par)-np.sqrt(eig_val[1])*np.sin(phi)], [np.mean(_mock_par), np.mean(_mock_par)+np.sqrt(eig_val[1])*np.cos(phi)], linewidth=0.05,color='red')
+                color='red'
+                widht=0.04
+                #if ((np.sqrt(eig_val[1])/np.sqrt(eig_val[0])<0.6)&(phi<np.pi/3)&(phi>np.pi/6)):
+                if (pearson>0.7):
+                    color='green'
+                    widht=0.5
+                
+                axs1[1,2].plot(x_ell, y_ell, color=color,linewidth=widht)
+
+    
+    axs1[1,2].axis('equal')
+    axs1[1,2].plot([np.min(par), np.max(par)], [np.min(par), np.max(par)], color='black')
     pos=axs1[1,2].get_position()
     pos_new=Bbox([[pos.xmin, pos.ymin], [pos.xmax-0.045, pos.ymax]])
     axs1[1,2].set_position(pos_new)
-    axs1[1,2].set_facecolor('#d8dcd6')
+    #axs1[1,2].set_facecolor('#d8dcd6')
 
-    _im=axs1[2,0].pcolormesh(x_g, y_g, bias_par.statistic, cmap=cm.nipy_spectral, vmin=vmin[2], vmax=vmax[2])
+    _im=axs1[2,0].pcolormesh(x_g, y_g, bias_par.statistic, cmap=cm.RdYlGn, vmin=vmin[2], vmax=vmax[2])
     cbar=fig1.colorbar(_im, ax=axs1[2,0])
-    cbar.set_label(r'$<out-in>$', fontsize=16)
+    cbar.set_label(r'$<out-in>$', fontsize=20)
+    cbar.ax.tick_params(labelsize=18)
     #axs1[2,0].set_title('mean out-in')
     axs1[2,0].set_facecolor('#d8dcd6')
-    
-    _im=axs1[2,1].pcolormesh(x_g, y_g, np.sqrt(mean2diff_bias.statistic), cmap=cm.gnuplot2, vmin=vmin[3], vmax=vmax[3])
+    axs1[2,0].plot(err_x, err_y, color='red')
+
+    norm=simple_norm(np.sqrt(mean2diff_bias.statistic), 'asinh', min_cut=vmin[3], max_cut=vmax[3])
+    _im=axs1[2,1].pcolormesh(x_g, y_g, np.sqrt(mean2diff_bias.statistic), cmap=cm.nipy_spectral, norm=norm)
     cbar=fig1.colorbar(_im, ax=axs1[2,1])
-    cbar.set_label(r'$\sqrt{<(out-in)^2>}$', fontsize=16)
+    cbar.set_label(r'$\sqrt{<(out-in)^2>}$', fontsize=20)
+    cbar.ax.tick_params(labelsize=18)
     axs1[2,1].set_facecolor('#d8dcd6')
     #axs1[2,1].set_title(r'$\sqrt{mean_{out-in}^2+std_{out-in}}$')
-    
-    _im=axs1[2,2].pcolormesh(x_g, y_g, median_bayes_err.statistic, cmap=cm.gnuplot2, vmin=vmin[4], vmax=vmax[4])
+    axs1[2,1].plot(err_x, err_y, color='red')
+   
+    norm=simple_norm(median_bayes_err.statistic, 'asinh', min_cut=vmin[4], max_cut=vmax[4])
+    _im=axs1[2,2].pcolormesh(x_g, y_g, median_bayes_err.statistic, cmap=cm.nipy_spectral, norm=norm)
     cbar=fig1.colorbar(_im, ax=axs1[2,2])
-    cbar.set_label(r'$err_{bayes}$', fontsize=16)
+    cbar.set_label(r'$err_{bayes}$', fontsize=20)
+    cbar.ax.tick_params(labelsize=18)
     axs1[2,2].set_facecolor('#d8dcd6')
-    #axs1[2,2].set_title('err bayes')
+    axs1[2,2].plot(err_x, err_y, color='red')
     
     #axs1[0,1].axis('off')
     #axs1[0,2].axis('off')
     
-    
-    axs1[2,2].set_xlabel(x_label, size=14)
-    axs1[2,2].set_ylabel(y_label, size=14)
+    axs1[2,2].set_xlabel(x_label, size=18)
+    #axs1[2,2].set_ylabel(y_label, size=18)
 
-    axs1[2,0].set_xlabel(x_label, size=14)
-    axs1[1,2].set_xlabel(par_name+r'$_{in}$', size=14)
+    axs1[2,0].set_xlabel(x_label, size=18)
+    axs1[1,2].set_xlabel(par_name+r'$_{in}$', size=18)
 
-    axs1[0,0].set_ylabel(y_label, size=14)
-    axs1[0,0].set_xlabel(x_label, size=14)
+    axs1[0,0].set_ylabel(y_label, size=18)
+    axs1[0,0].set_xlabel(x_label, size=18)
     
-    axs1[0,1].set_ylabel(y_label, size=14)
-    axs1[0,1].set_xlabel(x_label, size=14)
+    #axs1[0,1].set_ylabel(y_label, size=18)
+    axs1[0,1].set_xlabel(x_label, size=18)
     
-    axs1[1,1].set_ylabel(y_label, size=14)
-    axs1[1,1].set_xlabel(x_label, size=14)
+    #axs1[1,1].set_ylabel(y_label, size=18)
+    axs1[1,1].set_xlabel(x_label, size=18)
     
-    axs1[0,2].set_ylabel(y_label, size=14)
-    axs1[0,2].set_xlabel(x_label, size=14)
+    #axs1[0,2].set_ylabel(y_label, size=18)
+    axs1[0,2].set_xlabel(x_label, size=18)
     
-    axs1[1,0].set_ylabel(y_label, size=14)
-    axs1[1,0].set_xlabel(x_label, size=14)
+    axs1[1,0].set_ylabel(y_label, size=18)
+    axs1[1,0].set_xlabel(x_label, size=18)
 
-    axs1[2,1].set_xlabel(x_label, size=14)
-    axs1[2,1].set_ylabel(y_label, size=14)
+    axs1[2,1].set_xlabel(x_label, size=18)
+    #axs1[2,1].set_ylabel(y_label, size=18)
 
-    axs1[2,0].set_ylabel(y_label, size=14)
-    axs1[1,2].set_ylabel(par_name+r'$_{out}$', size=14)
+    axs1[2,0].set_ylabel(y_label, size=18)
+    axs1[1,2].set_ylabel(par_name+r'$_{out}$', size=18)
     
+    if (statistic):
+        return std_mock, bias_par.statistic, np.sqrt(mean2diff_bias.statistic), median_bayes_err.statistic, x_g, y_g
+    else:
+        return fig1
     
-    return fig1
-
 
 def diff_density_map(x,y,par1,par2,statistic,name1='',name2='',xlabel='',ylabel='',figsize=(10,25),vmin=None,vmax=None):
     stat_diffpar=stats.binned_statistic_2d(x,y,par1-par2,bins=50,statistic=statistic)
@@ -1208,5 +1266,24 @@ def scatter_hist(par1, par2, bins=50, figsize=(10,10), s=1, name_par=''):
     axs.set_ylabel(name_par+r'$_{out}$', size=16)
     
     return fig
+
+def ellipse(a,b,phi=0,x_c=0.0,y_c=0.0):
+    import numpy as np
+    
+    theta=np.arange(0, 2*np.pi, 0.01)
+    
+    xpos=a*np.cos(theta)
+    ypos=b*np.sin(theta)
+    
+    newx=xpos*np.cos(phi)+ypos*np.sin(phi)+x_c
+    newy=-xpos*np.sin(phi)+ypos*np.cos(phi)+y_c
+    
+    return newx, newy
+    
+    
+    
+    
+    
+    
            
         
