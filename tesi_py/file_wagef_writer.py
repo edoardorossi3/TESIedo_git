@@ -17,10 +17,10 @@ import numpy as np
 import astropy.io.fits as fits
 from tqdm import tqdm
 
-work_dir='/home/edoardo/Desktop/TESI/models/Sandage_varZ_v4.2eq_CB16MILES_ChFall'
-f_name='sandage_varZ_v4.2eq.fits'
-suffix_physpar='sandage_varZ_v4.2eq_spec_dcomb0p25null'
-n_chunks=40
+work_dir='/export/home/extragal/zibetti/no_ownCloud/SteMaGE/data/SEDlibraries/Sandage_v4.1_Zfix_noburst_cb16MILES_1M/'
+f_name='sandage_varZ_v4.1_m42fix_noburst_1M.fits'
+suffix_physpar='sandage_varZ_v4.1_m42fix_noburst_1M_spec_dcombnull'
+n_chunks=50
 
 def bisection(f, t_min, t_max, toll):
     if f(t_min)*f(t_max)>=0:
@@ -56,32 +56,34 @@ t25b=[0.0]*N_models
 t50b=[0.0]*N_models
 t75b=[0.0]*N_models
 t90b=[0.0]*N_models
+log_tobs=hdul[1].data['LOGTFORM']
+t_obs=10.0**(log_tobs)
 
 for k in tqdm(range(0, N_models)):
-    t_obs=10.0**(data[k][0]) #t_obs in yr
+    #t_obs=10.0**(data[k][0]) #t_obs in yr
     tau=10.0**(data[k][1]) #tau in yr
     Nburst=data[k][5]
     A_burst=data[k][7]
     t_burst=[0.0]*6
     age_burst=[0.0]*6
     age_burst=np.where(data[k][6]!=0, 10**(data[k][6]), age_burst) #age_burst in yr
-    t_burst=np.where(age_burst==0, t_burst, t_obs-age_burst)
+    t_burst=np.where(age_burst==0, t_burst, t_obs[k]-age_burst)
      
                  
     #Mass_tot=Massb(t_obs, tau, t_obs, A_burst, t_burst, Nburst)                
     Mass_tot=1.0+np.sum(A_burst)    
                  
-    frac50=lambda x: Massb(x, tau, t_obs, A_burst, t_burst, Nburst)/Mass_tot-0.5
-    frac25=lambda x: Massb(x, tau, t_obs, A_burst, t_burst, Nburst)/Mass_tot-0.25
-    frac75=lambda x: Massb(x, tau, t_obs, A_burst, t_burst, Nburst)/Mass_tot-0.75
-    frac90=lambda x: Massb(x, tau, t_obs, A_burst, t_burst, Nburst)/Mass_tot-0.9
-    frac10=lambda x: Massb(x, tau, t_obs, A_burst, t_burst, Nburst)/Mass_tot-0.1
+    frac50=lambda x: Massb(x, tau, t_obs[k], A_burst, t_burst, Nburst)/Mass_tot-0.5
+    frac25=lambda x: Massb(x, tau, t_obs[k], A_burst, t_burst, Nburst)/Mass_tot-0.25
+    frac75=lambda x: Massb(x, tau, t_obs[k], A_burst, t_burst, Nburst)/Mass_tot-0.75
+    frac90=lambda x: Massb(x, tau, t_obs[k], A_burst, t_burst, Nburst)/Mass_tot-0.9
+    frac10=lambda x: Massb(x, tau, t_obs[k], A_burst, t_burst, Nburst)/Mass_tot-0.1
     
-    t50b[k]=bisection(frac50, 0.0, t_obs, 0.01)
-    t25b[k]=bisection(frac25, 0.0, t_obs, 0.01)
-    t75b[k]=bisection(frac75, 0.0, t_obs, 0.01)
-    t90b[k]=bisection(frac90, 0.0, t_obs, 0.01)
-    t10b[k]=bisection(frac10, 0.0, t_obs, 0.01)
+    t50b[k]=bisection(frac50, 0.0, t_obs[k], 0.01)
+    t25b[k]=bisection(frac25, 0.0, t_obs[k], 0.01)
+    t75b[k]=bisection(frac75, 0.0, t_obs[k], 0.01)
+    t90b[k]=bisection(frac90, 0.0, t_obs[k], 0.01)
+    t10b[k]=bisection(frac10, 0.0, t_obs[k], 0.01)
     
 age10=t_obs-t10b
 age90=t_obs-t90b

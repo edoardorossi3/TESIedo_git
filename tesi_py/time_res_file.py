@@ -13,19 +13,20 @@ import astropy.io.fits as fits
 from astropy.table import Table
 from astropy.table import Column
 
-work_dir=os.getenv('HOME')+'/Desktop/TESI/models/Sandage_v4.1_Zfix_noburst_bc03MILES_100k/'
+work_dir='/export/home/extragal/zibetti/no_ownCloud/SteMaGE/data/SEDlibraries/Sandage_v4.1_Zfix_noburst_cb16MILES_1M/'
 z_list=['32', '42', '52', '62', '72']
 N_z=np.size(z_list)
-n_chunks=5
-N_bins=30
-
+n_chunks=50
+N_bins=83
+snr='5'
 t=Table()
+#sandage_varZ_v4.1_m32fix_noburst_1M_spec_dcombnull_idx_001.fits
 
 
 for z in range(0, N_z):
-    idx_file=work_dir+'sandage_varZ_v4.1_m'+z_list[z]+'fix_noburst_100k_spec_dcombnull_idx_001.fits'
-    par_file=work_dir+'sandage_varZ_v4.1_m'+z_list[z]+'fix_noburst_100k_spec_dcombnull_001_physpar_wagef.fits'
-    file_pert=work_dir+'sandage_varZ_v4.1_m'+z_list[z]+'fix_noburst_100k_spec_dcombnull_perterr_SNR5_001.fits'
+    idx_file=work_dir+'sandage_varZ_v4.1_m'+z_list[z]+'fix_noburst_1M_spec_dcombnull_idx_001.fits'
+    par_file=work_dir+'sandage_varZ_v4.1_m'+z_list[z]+'fix_noburst_1M_spec_dcombnull_001_physpar_wagef.fits'
+    file_pert=work_dir+'sandage_varZ_v4.1_m'+z_list[z]+'fix_noburst_1M_spec_dcombnull_perterr_SNR'+snr+'_001.fits'
     
     
     hdul_idx=fits.open(idx_file)
@@ -61,9 +62,9 @@ for z in range(0, N_z):
     
     
     for i_chunks in range(2, n_chunks+1):
-        _idx_file=work_dir+'sandage_varZ_v4.1_m'+z_list[z]+'fix_noburst_100k_spec_dcombnull_idx_{:03d}.fits'
-        _par_file=work_dir+'sandage_varZ_v4.1_m'+z_list[z]+'fix_noburst_100k_spec_dcombnull_{:03d}_physpar_wagef.fits'
-        _pert_file=work_dir+'sandage_varZ_v4.1_m'+z_list[z]+'fix_noburst_100k_spec_dcombnull_perterr_SNR5_{:03d}.fits'
+        _idx_file=work_dir+'sandage_varZ_v4.1_m'+z_list[z]+'fix_noburst_1M_spec_dcombnull_idx_{:03d}.fits'
+        _par_file=work_dir+'sandage_varZ_v4.1_m'+z_list[z]+'fix_noburst_1M_spec_dcombnull_{:03d}_physpar_wagef.fits'
+        _pert_file=work_dir+'sandage_varZ_v4.1_m'+z_list[z]+'fix_noburst_1M_spec_dcombnull_perterr_SNR'+snr+'_{:03d}.fits'
 
         
         _hdul_idx=fits.open(_idx_file.format(i_chunks))
@@ -124,7 +125,7 @@ for z in range(0, N_z):
     sigma9=np.sqrt(sigma_r**2+sigma_z**2)
     
     d1090n50=np.log10((age10-age90)/age50)
-    bin_age50=np.histogram(np.log10(age50), bins=N_bins, range=(8.65, 10.15))[1]
+    bin_age50=np.histogram(np.log10(age50), bins=N_bins, range=(6.00, 10.15))[1]
     t_res=[0.0]*N_bins
     
     for i in range(0, N_bins):
@@ -137,7 +138,7 @@ for z in range(0, N_z):
     new_col=Column(t_res, name=name_col)
     t.add_column(new_col)
 
-new_file=work_dir+'Time_resol_Zfix_SNR5_mgfe.fits'
+new_file=work_dir+'Time_resol_Zfix1M_SNR'+snr+'_tot.fits'
 
 t.write(new_file, format='fits', overwrite=True)
     

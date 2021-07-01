@@ -3,10 +3,10 @@ pro index_errors,i_chunk,SNR
   read_idxinfo
 
   if n_elements(SNR) eq 0  then SNR=20. ; if SNR not given, assume default SNR=20.
-  i_chunk=1
+  ;i_chunk=1
   ;prog_dir='~/Desktop/TESIedo_git/'
-  models_dir=getenv('SEDLIBRARIES_DIR')+'/Sandage_v4.1_Zfix_noburst_bc03MILES_100k/' ;'~/Desktop/TESI/models/sandage_dcomb/'
-  file_prefix='sandage_varZ_v4.1_m62fix_noburst_100k_spec_'  
+  models_dir=getenv('SEDLIBRARIES_DIR')+'/Sandage_v4.1_Zfix_noburst_cb16MILES_1M/' ;'~/Desktop/TESI/models/sandage_dcomb/'
+  file_prefix='sandage_varZ_v4.1_m72fix_noburst_1M_spec_'  
   spec_suffix='dcombnull_'                      
   idx_suffix='dcombnull_idx_'
   idx_suffix_werr='dcombnull_idxerr_'
@@ -134,10 +134,10 @@ pro index_errors,i_chunk,SNR
 end
 
 pro parall_idx_err
-  maxthreads=10 ; max number of parallel threads
+  maxthreads=25 ; max number of parallel threads
   obridge=objarr(maxthreads)
   cur_chunk=intarr(maxthreads)
-  nchunks=40
+  nchunks=50
   nthreads=0 ; number of active threads
   i_chunk=0
   SNR=20.
