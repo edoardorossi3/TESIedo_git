@@ -920,8 +920,20 @@ def chi_q(par,idx1, idx2, idx3, idx4, idx5, mag1, mag2, mag3, mag4, isel, iref,s
     inter_chi_mag=lambda t: np.interp(t, x, p16_chi_mag-upper_lim_mag)
     inter_chi_balmer=lambda t: np.interp(t, x, p16_chi_balmer-upper_lim_balmer)
     inter_chi_mgfe=lambda t: np.interp(t, x, p16_chi_mgfe-upper_lim_mgfe)
-
-    x_m=f_plt.bisection(inter_chi, xmin, xmax, toll)
+    
+    xmax_tot=-1.0
+    while((inter_chi(xmin)*inter_chi(xmax_tot)>0) and (xmax_tot<1.0)):
+        xmax_tot=xmax_tot+0.05
+        
+    xmax_idx=-1.0
+    while((inter_chi_idx(xmin)*inter_chi_idx(xmax_idx)>0) and (xmax_idx<1.0)):
+        xmax_idx=xmax_idx+0.05
+        
+    xmax_mag=-1.0
+    while((inter_chi_mag(xmin)*inter_chi_mag(xmax_mag)>0) and (xmax_mag<1.0)):
+        xmax_mag=xmax_mag+0.05
+    
+    x_m=f_plt.bisection(inter_chi, xmin, xmax_tot, toll)
     x_m_idx=f_plt.bisection(inter_chi_idx, xmin, xmax, toll)
     x_m_mag=f_plt.bisection(inter_chi_mag, xmin, xmax, toll)
     x_m_balmer=f_plt.bisection(inter_chi_balmer, xmin, xmax, toll)
@@ -947,7 +959,7 @@ def chi_q(par,idx1, idx2, idx3, idx4, idx5, mag1, mag2, mag3, mag4, isel, iref,s
     if mkplot:
         return fig, x_m
     else:
-        return x_m_mgfe
+        return x_m_mag
 
 
 

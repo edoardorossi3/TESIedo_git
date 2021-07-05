@@ -27,8 +27,8 @@ pro mock_fit, i_chunk
     ;; read mock table
     ;mock_fname='/Users/zibetti/ownCloud/Tesi_ERossi/models/sandage_varZ_v4.1eq_spec_dcomb_perterr_'+string(i_chunk, format='(I03)')+'.fits'
     ;mock_fname=getenv('SEDLIBRARIES_DIR')+'/Sandage_varZ_v4.1eq_bc03MILES_ChFall/mock_ER_001/sandage_varZ_v4.1eq_spec_dcomb_perterr_H_'+string(i_chunk, format='(I03)')+'.fits' ;considero anche la banda H (_perterr_H_)
-    mock_fname=getenv('SEDLIBRARIES_DIR')+'/Sandage_varZ_v4.2eq_CB16MILES_ChFall/sandage_varZ_v4.2eq_spec_dcomb0p25null_perterr_SNR10_'+string(i_chunk, format='(I03)')+'.fits'
-    models_dir=getenv('SEDLIBRARIES_DIR')+'/Sandage_varZ_v4.2eq_CB16MILES_ChFall/mock_ER_snr10/'
+    mock_fname=getenv('SEDLIBRARIES_DIR')+'/Sandage_varZ_v4.2eq_CB16MILES_ChFall/sandage_varZ_v4.2eq_spec_dcomb0p25null_perterr_SNR5_'+string(i_chunk, format='(I03)')+'.fits'
+    models_dir=getenv('SEDLIBRARIES_DIR')+'/Sandage_varZ_v4.2eq_CB16MILES_ChFall/mock_ER_snr5/'
     mock_table=mrdfits(mock_fname,1)
     ;stop
     ;idx_names=['D4000n',  'LICK_Hb', 'HDHG', 'MGFE_PRIME','MG2FE'] & n_idx=n_elements(idx_names)
