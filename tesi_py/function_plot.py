@@ -959,7 +959,7 @@ def chi_q(par,idx1, idx2, idx3, idx4, idx5, mag1, mag2, mag3, mag4, isel, iref,s
     if mkplot:
         return fig, x_m
     else:
-        return x_m_mag
+        return chi_q
 
 
 
