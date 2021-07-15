@@ -21,6 +21,7 @@ def spectre(suffix_file, age50_min, age50_max):
     work_dir='/export/home/extragal/zibetti/no_ownCloud/SteMaGE/data/SEDlibraries/Sandage_v4.1_Zfix_noburst_cb16MILES_1M/'
     #name_file='sandage_varZ_v4.1_m62fix_noburst_1M_spec_dcombnull_001.fits'
     snr='200'
+    SNR=200.0
     file_spec=work_dir+suffix_file+'_001.fits'
     file_par=work_dir+suffix_file+'_001_physpar_wagef.fits'
     file_time=work_dir+'Time_resol_Zfix1M_SNR'+snr+'_tot.fits'
@@ -113,21 +114,38 @@ def spectre(suffix_file, age50_min, age50_max):
     dage_max=0.3
     time_res=time_res_vector[n_bin]
     
-    wl_range=[3500, 8000]
-    wl_norm=[5450, 5550]
+    #wl_range=[3500, 8000]
+    wl_range=[4827,4892]
+    #wl_norm=[5450, 5550]
+    wl_norm=[4827, 4848, 4876, 4892]
     sel_wl=((wl>wl_range[0]) & (wl<wl_range[1]))
-    sel_norm=((wl>wl_norm[0]) & (wl<wl_norm[1]))
-        
+    #sel_norm=((wl>wl_norm[0]) & (wl<wl_norm[1]))
+    sel_norm=(((wl>wl_norm[0]) & (wl<wl_norm[1])) | ((wl>wl_norm[2]) & (wl<wl_norm[3])))    
+    
     #sel_models=((np.log10(age50)>age50_min) & (np.log10(age50)<age50_max))
     #print(np.size(sel_models))
     #print(np.sum(sel_models))
     sel_ref=((np.log10(age50)>age50_min) & (np.log10(age50)<age50_max)&(dage_norm<-1.0))
     idx_sel=idx_array[sel_models]
-    widths=[5,0.05]
+    #widths=[5,0.15]
+    widths=[3,0.15,3]
     heights=[1,1]
     
-    gs=dict(width_ratios=widths, height_ratios=heights)
-    fig, axs=plt.subplots(2,2,figsize=(40,10), gridspec_kw=gs)
+    #gs=dict(width_ratios=widths, height_ratios=heights)
+    cm2inch = 1/2.54 
+    #fig, axs=plt.subplots(2,2,figsize=(30*cm2inch,20*cm2inch), gridspec_kw=gs)
+    fig = plt.figure(figsize=(30*cm2inch,20*cm2inch))
+    #gs = fig.add_gridspec(2, 2, height_ratios=heights, width_ratios=widths, hspace=0.2, wspace=0.3)
+    gs = fig.add_gridspec(2, 3, height_ratios=heights, width_ratios=widths, hspace=0.2, wspace=0.4)
+    
+    ax1 = fig.add_subplot(gs[0, 0])
+    ax2 = fig.add_subplot(gs[1, 0])
+    ax3 = fig.add_subplot(gs[:, 1])
+    ax4 = fig.add_subplot(gs[0,2])
+    ax5 = fig.add_subplot(gs[1,2])
+
+    #clb.ColorbarBase(ax3, cmap=cm.rainbow_r)
+    
     print('size r:', np.size(r))
     print('size i:', np.size(i))
 
@@ -151,33 +169,50 @@ def spectre(suffix_file, age50_min, age50_max):
     arg_delta_min=np.argmin(delta)
     #print('first spec:', np.shape(hdul[1].data[0,...]))
     #norm=np.mean(matrix_spec[sel_delta_min,sel_norm])
-    norm=np.mean(matrix_spec[arg_delta_min,sel_norm])
-    #axs[0,0].plot(wl[sel_wl], spec_sel[sel_delta_min, sel_wl]/norm, color='black')
+    
+    norm=np.mean(matrix_spec[arg_delta_min,sel_norm]) #fluxes
     
     for i_model in range(0, N_row):
         #_norm=np.mean(spec[idx_sel[i_model],sel_norm])
+        
         _norm=np.mean(matrix_spec[i_model, sel_norm])
+        
         c=cm.rainbow_r((dage_norm[idx_sel[i_model]]-dage_min)/(dage_max-dage_min))
         #axs[0,0].plot(wl[sel_wl], spec[idx_sel[i_model], sel_wl]/_norm, alpha = 0.1,linewidth = 0.1, color=c)
         #axs[1,0].plot(wl[sel_wl], spec[idx_sel[i_model], sel_wl]/_norm-spec_sel[sel_delta_min, sel_wl]/norm, alpha = 0.1,linewidth = 0.1, color=c)
-        axs[0,0].plot(wl[sel_wl], matrix_spec[i_model, sel_wl]/_norm, alpha = 0.1,linewidth = 0.1, color=c)
-        axs[1,0].plot(wl[sel_wl], matrix_spec[i_model, sel_wl]/_norm-matrix_spec[arg_delta_min, sel_wl]/norm, alpha = 0.1,linewidth = 0.1, color=c)
+        ax1.plot(wl[sel_wl], matrix_spec[i_model, sel_wl]/_norm, alpha = 0.1,linewidth = 0.05, color=c)
+        ax2.plot(wl[sel_wl], (matrix_spec[i_model, sel_wl]/_norm)/(matrix_spec[arg_delta_min, sel_wl]/norm), alpha = 0.1,linewidth = 0.05, color=c)
         
     
     NORM=Normalize(vmin=dage_min, vmax=dage_max)
-    clb.ColorbarBase(axs[0,1], cmap=cm.rainbow_r, norm=NORM)
-    axs[0,1].plot([-1,1], [time_res, time_res], linewidth=5, color='black') 
-    clb.ColorbarBase(axs[1,1], cmap=cm.rainbow_r, norm=NORM)
-    axs[1,1].plot([-1,1], [time_res, time_res], linewidth=5, color='black') 
+    clb.ColorbarBase(ax3, cmap=cm.rainbow_r, norm=NORM)
+    ax3.plot([-1,1], [time_res, time_res], linewidth=3, color='black') 
     
-    axs[0,0].set_facecolor('#d8dcd6')
-    axs[1,0].set_facecolor('#d8dcd6')
-    axs[0,0].tick_params(labelsize=30)
-    axs[1,0].tick_params(labelsize=30)
-    axs[0,1].tick_params(labelsize=30)
-    axs[1,1].tick_params(labelsize=30)
+    ax1.set_facecolor('#d8dcd6')
+    ax2.set_facecolor('#d8dcd6')
+    ax1.tick_params(labelsize=15)
+    ax2.tick_params(labelsize=15)
+    ax3.tick_params(labelsize=10)
+    ax2.set_ylim([0.95,1.05])
+    #axs[1,0].plot([np.min(wl[sel_wl]), np.max(wl[sel_wl])], np.array([1.0,1.0])/SNR)
+    #axs[1,0].plot([np.min(wl[sel_wl]), np.max(wl[sel_wl])], -np.array([1.0,1.0])/SNR)
+    ax1.minorticks_on()
+    ax2.minorticks_on()
+    
+    ax2.set_xlabel(r'$\lambda [\AA]$', size=20)
+    ax2.set_ylabel(r'$L_{\lambda}/L_{\lambda,ref}$', size=20)
+    ax1.set_ylabel(r'$L_{\lambda}/L_{\lambda,cont}$', size=20)
+    ax3.set_ylabel(r'$\Delta age_{n}$', size=20)
+    
+    #arrow
+    ax3.annotate('S/N=200',
+    xy=(-1, time_res),
+    xycoords='data',
+    xytext=(-3, time_res),
+    arrowprops=
+    dict(facecolor='black', shrink=0.05),
+    horizontalalignment='right',
+    verticalalignment='center')
+     
+    return fig
 
-    
-    
-    
-        
