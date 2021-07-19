@@ -465,7 +465,7 @@ def spec_indices(suffix_file, age50_min, age50_max, wl_range1, wl_range2, wl_nor
     #gs=dict(width_ratios=widths, height_ratios=heights)
     cm2inch = 1/2.54 
     #fig, axs=plt.subplots(2,2,figsize=(30*cm2inch,20*cm2inch), gridspec_kw=gs)
-    fig = plt.figure(figsize=(30*cm2inch,20*cm2inch))
+    fig = plt.figure(figsize=(30*cm2inch,15*cm2inch))
     #gs = fig.add_gridspec(2, 2, height_ratios=heights, width_ratios=widths, hspace=0.2, wspace=0.3)
     gs = fig.add_gridspec(2, 3, height_ratios=heights, width_ratios=widths, hspace=0.2, wspace=0.8)
     

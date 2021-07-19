@@ -560,9 +560,10 @@ def idx_resol_stat(par,idx_1, idx_2, idx_3, idx_4,  idx_5,par_name='', idx_name=
     return fig
     
     
-def idx_resol_stat4(par,i2,i3,i4,idx_1, idx_2, idx_3, idx_4,  idx_5,x_name='',par_name=['','',''], idx_name=['','','','',''],statistic='median',bins=50, figsize=(10,5),s=1):
+def idx_resol_stat4(par,i2,i3,i4,idx_1, idx_2, idx_3, idx_4,  idx_5,x_name='',par_name=['','',''], idx_name=['','','','',''],statistic='median',bins=50, figsize=(10,5),s=1, labelsize=10,size=15,hspace=None, wspace=None):
     
     fig, axs=plt.subplots(2, 3, figsize=figsize)
+    plt.subplots_adjust(wspace=wspace, hspace=hspace)
     axs[1,2].axis('off')
     
     par2=par[i2]
@@ -629,31 +630,39 @@ def idx_resol_stat4(par,i2,i3,i4,idx_1, idx_2, idx_3, idx_4,  idx_5,x_name='',pa
     axs[1,0].plot(stat4_4.bin_edges[:-1],stat4_4.statistic, label=par_name[2])
     axs[1,1].plot(stat4_5.bin_edges[:-1],stat4_5.statistic, label=par_name[2])
     
+    axs[0,0].tick_params(labelsize=labelsize)
+    axs[0,1].tick_params(labelsize=labelsize)
+    axs[0,2].tick_params(labelsize=labelsize)
+    axs[1,0].tick_params(labelsize=labelsize)
+    axs[1,1].tick_params(labelsize=labelsize)
+
     
-    axs[0,0].set_xlabel(x_name)
-    axs[0,1].set_xlabel(x_name)
-    axs[0,2].set_xlabel(x_name)
-    axs[1,0].set_xlabel(x_name)
-    axs[1,1].set_xlabel(x_name)
+    axs[0,0].set_xlabel(x_name, size=size)
+    axs[0,1].set_xlabel(x_name, size=size)
+    axs[0,2].set_xlabel(x_name, size=size)
+    axs[1,0].set_xlabel(x_name, size=size)
+    axs[1,1].set_xlabel(x_name, size=size)
     
-    axs[0,0].set_ylabel(idx_name[0])
-    axs[0,1].set_ylabel(idx_name[1])
-    axs[0,2].set_ylabel(idx_name[2])
-    axs[1,0].set_ylabel(idx_name[3])
-    axs[1,1].set_ylabel(idx_name[4])
+    axs[0,0].set_ylabel(idx_name[0], size=size)
+    axs[0,1].set_ylabel(idx_name[1], size=size)
+    axs[0,2].set_ylabel(idx_name[2], size=size)
+    axs[1,0].set_ylabel(idx_name[3], size=size)
+    axs[1,1].set_ylabel(idx_name[4], size=size)
     
-    axs[0,0].legend(loc='upper right')
+    axs[0,0].legend(loc='upper left')
     axs[0,1].legend(loc='upper left')
-    axs[0,2].legend(loc='upper right')
-    axs[1,0].legend(loc='upper right')
+    axs[0,2].legend(loc='upper left')
+    axs[1,0].legend(loc='upper left')
     axs[1,1].legend(loc='upper left')
     
     return fig
 
 
-def idx_resol_stat4col(par,i2,i3,i4,idx_1, idx_2, idx_3, idx_4, x_name='d1090n50',par_name=['age50<9.0','age50_9.0-9.5','age50>9.5'], idx_name=['u-r','g-r','r-i','r-z'],statistic='median',bins=50, figsize=(10,5),s=1):
+def idx_resol_stat4col(par,i2,i3,i4,idx_1, idx_2, idx_3, idx_4, x_name='d1090n50',par_name=['age50<9.0','age50_9.0-9.5','age50>9.5'], idx_name=['u-r','g-r','r-i','r-z'],statistic='median',bins=50, figsize=(10,5),s=1, labelsize=10,size=15,hspace=None, wspace=None):
     
     fig, axs=plt.subplots(2, 3, figsize=figsize)
+    plt.subplots_adjust(wspace=wspace, hspace=hspace)
+
     axs[1,2].axis('off')
     axs[1,1].axis('off')
     
@@ -713,25 +722,31 @@ def idx_resol_stat4col(par,i2,i3,i4,idx_1, idx_2, idx_3, idx_4, x_name='d1090n50
     axs[1,0].plot(stat4_4.bin_edges[:-1],stat4_4.statistic, label=par_name[2])
     
     
-    axs[0,0].set_xlabel(x_name)
-    axs[0,1].set_xlabel(x_name)
-    axs[0,2].set_xlabel(x_name)
-    axs[1,0].set_xlabel(x_name)
+    axs[0,0].tick_params(labelsize=labelsize)
+    axs[0,1].tick_params(labelsize=labelsize)
+    axs[0,2].tick_params(labelsize=labelsize)
+    axs[1,0].tick_params(labelsize=labelsize)
+
     
-    axs[0,0].set_ylabel(idx_name[0])
-    axs[0,1].set_ylabel(idx_name[1])
-    axs[0,2].set_ylabel(idx_name[2])
-    axs[1,0].set_ylabel(idx_name[3])
+    axs[0,0].set_xlabel(x_name, size=size)
+    axs[0,1].set_xlabel(x_name, size=size)
+    axs[0,2].set_xlabel(x_name, size=size)
+    axs[1,0].set_xlabel(x_name, size=size)
     
-    axs[0,0].legend(loc='upper right')
+    axs[0,0].set_ylabel(idx_name[0], size=size)
+    axs[0,1].set_ylabel(idx_name[1], size=size)
+    axs[0,2].set_ylabel(idx_name[2], size=size)
+    axs[1,0].set_ylabel(idx_name[3], size=size)
+    
+    axs[0,0].legend(loc='upper left')
     axs[0,1].legend(loc='upper left')
-    axs[0,2].legend(loc='upper right')
-    axs[1,0].legend(loc='upper right')
+    axs[0,2].legend(loc='upper left')
+    axs[1,0].legend(loc='upper left')
     
     return fig
     
     
-def chi_q(par,idx1, idx2, idx3, idx4, idx5, mag1, mag2, mag3, mag4, isel, iref,sigma1=None,sigma2=None,sigma3=None,sigma4=None,sigma5=None,sigma6=None,sigma7=None,sigma8=None,sigma9=None, val_ref=-1.00,figsize=(15,10), title='', ylim=[None,None], xlim=[None, None], bins=50, xmin=-1.3, xmax=1.0, toll=0.1, mkplot=True, sigma_obs=False):
+def chi_q(par,idx1, idx2, idx3, idx4, idx5, mag1, mag2, mag3, mag4, isel, iref,sigma1=None,sigma2=None,sigma3=None,sigma4=None,sigma5=None,sigma6=None,sigma7=None,sigma8=None,sigma9=None, val_ref=-1.00,figsize=(15,10), title='', ylim=[None,None], xlim=[None, None], bins=50, xmin=-1.3, xmax=1.0, toll=0.1, mkplot=True, sigma_obs=False,size=10,size_title=15,wspace=None,hspace=None,labelsize=10):
     import function_plot as f_plt
     
     
@@ -860,6 +875,8 @@ def chi_q(par,idx1, idx2, idx3, idx4, idx5, mag1, mag2, mag3, mag4, isel, iref,s
     
     if mkplot:
         fig, axs=plt.subplots(1,3,figsize=figsize)
+        plt.subplots_adjust(wspace=wspace, hspace=hspace)
+
         axs[0].scatter(par_sel,(chi_q),s=1)
         axs[0].plot(x, (median_chi), color='red')
         axs[0].plot(x, p16_chi, color='orange')
@@ -872,8 +889,8 @@ def chi_q(par,idx1, idx2, idx3, idx4, idx5, mag1, mag2, mag3, mag4, isel, iref,s
         
         axs[0].set_ylim(ylim)
         
-        axs[0].set_xlabel('d1090n50')
-        axs[0].set_ylabel('chi_q')
+        axs[0].set_xlabel(r'$\Delta age_{n}$', size=size)
+        axs[0].set_ylabel(r'$\delta$',size=size)
         
         axs[1].scatter(par_sel,(chi_q_idx),s=1)
         axs[1].plot(x, (median_chi_idx), color='red')
@@ -885,8 +902,8 @@ def chi_q(par,idx1, idx2, idx3, idx4, idx5, mag1, mag2, mag3, mag4, isel, iref,s
        # axs[1].plot([np.min(par_sel), np.max(par_sel)],[p16_chi_ref_idx,p16_chi_ref_idx], color='#ff028d')
         
     
-        axs[1].set_xlabel('d1090n50')
-        axs[1].set_ylabel('chi_q_idx')
+        axs[1].set_xlabel(r'$\Delta age_{n}$', size=size)
+        axs[1].set_ylabel(r'$\delta_{idx}$',size=size)
         
         axs[1].set_yscale("log")
         axs[1].set_ylim(ylim)
@@ -904,14 +921,19 @@ def chi_q(par,idx1, idx2, idx3, idx4, idx5, mag1, mag2, mag3, mag4, isel, iref,s
         axs[2].set_yscale("log")
         axs[2].set_ylim(ylim)
         
-        axs[2].set_xlabel('d1090n50')
-        axs[2].set_ylabel('chi_q_col')
+        axs[2].set_xlabel(r'$\Delta age_{n}$', size=size)
+        axs[2].set_ylabel(r'$\delta_{col}$',size=size)
         
         axs[0].set_facecolor('#d8dcd6')
         axs[1].set_facecolor('#d8dcd6')
         axs[2].set_facecolor('#d8dcd6')
     
-        axs[1].set_title(title)
+        axs[1].set_title(title,size=size_title)
+        
+        axs[0].tick_params(labelsize=labelsize)
+        axs[1].tick_params(labelsize=labelsize)
+        axs[2].tick_params(labelsize=labelsize)
+
     
     #inter_max=np.interp(xmax,x, median_chi.statistic)
     #inter_min=np.interp(xmin, x, median_chi.statistic)
