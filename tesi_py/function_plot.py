@@ -889,7 +889,7 @@ def chi_q(par,idx1, idx2, idx3, idx4, idx5, mag1, mag2, mag3, mag4, isel, iref,s
         
         axs[0].set_ylim(ylim)
         
-        axs[0].set_xlabel(r'$\Delta age_{n}$', size=size)
+        axs[0].set_xlabel(r'$log_{10}(\Delta age_{n})$', size=size)
         axs[0].set_ylabel(r'$\delta$',size=size)
         
         axs[1].scatter(par_sel,(chi_q_idx),s=1)
@@ -902,7 +902,7 @@ def chi_q(par,idx1, idx2, idx3, idx4, idx5, mag1, mag2, mag3, mag4, isel, iref,s
        # axs[1].plot([np.min(par_sel), np.max(par_sel)],[p16_chi_ref_idx,p16_chi_ref_idx], color='#ff028d')
         
     
-        axs[1].set_xlabel(r'$\Delta age_{n}$', size=size)
+        axs[1].set_xlabel(r'$log_{10}(\Delta age_{n})$', size=size)
         axs[1].set_ylabel(r'$\delta_{idx}$',size=size)
         
         axs[1].set_yscale("log")
@@ -921,7 +921,7 @@ def chi_q(par,idx1, idx2, idx3, idx4, idx5, mag1, mag2, mag3, mag4, isel, iref,s
         axs[2].set_yscale("log")
         axs[2].set_ylim(ylim)
         
-        axs[2].set_xlabel(r'$\Delta age_{n}$', size=size)
+        axs[2].set_xlabel(r'$log_{10}(\Delta age_{n})$', size=size)
         axs[2].set_ylabel(r'$\delta_{col}$',size=size)
         
         axs[0].set_facecolor('#d8dcd6')

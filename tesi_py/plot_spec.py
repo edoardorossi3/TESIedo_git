@@ -5,7 +5,7 @@ Created on Mon Jul  5 18:34:15 2021
 
 @author: edoardo
 """
-def spectre(suffix_file, age50_min, age50_max):
+def spectre(suffix_file, age50_min, age50_max, dage_n_max=None):
     import numpy as np
     import astropy.io.fits as fits
     import os
@@ -123,8 +123,15 @@ def spectre(suffix_file, age50_min, age50_max):
         i=np.append(i, _i)
         z=np.append(z, _z)
         
+    dage_norm=np.log10((age10-age90)/age50)
+
+    if (dage_n_max!=None):
+        sel_models=((np.log10(age50)<age50_max) & (np.log10(age50)>age50_min) &(dage_norm<dage_n_max))
+    else:
+        sel_models=((np.log10(age50)<age50_max) & (np.log10(age50)>age50_min))
+
+
     
-    sel_models=((np.log10(age50)<age50_max) & (np.log10(age50)>age50_min))
     N_row=np.sum(sel_models)
     N_col=np.size(hdul[1].data[0,...])
     matrix_spec=np.zeros(shape=(N_row, N_col))
@@ -133,7 +140,6 @@ def spectre(suffix_file, age50_min, age50_max):
     n_bin=int((age50_min-6.0)/0.05)
     N_models=np.size(age10)
     idx_array=np.arange(N_models)
-    dage_norm=np.log10((age10-age90)/age50)
     dage_min=-1.3
     dage_max=0.3
     time_res5=time_res_vector5[n_bin]
@@ -210,6 +216,7 @@ def spectre(suffix_file, age50_min, age50_max):
         c=cm.rainbow_r((dage_norm[idx_sel[i_model]]-dage_min)/(dage_max-dage_min))
         #axs[0,0].plot(wl[sel_wl], spec[idx_sel[i_model], sel_wl]/_norm, alpha = 0.1,linewidth = 0.1, color=c)
         #axs[1,0].plot(wl[sel_wl], spec[idx_sel[i_model], sel_wl]/_norm-spec_sel[sel_delta_min, sel_wl]/norm, alpha = 0.1,linewidth = 0.1, color=c)
+        ax1.set_ylim([0.0,1.7])
         ax1.plot(wl[sel_wl], matrix_spec[i_model, sel_wl]/_norm, alpha = 0.1,linewidth = 0.05, color=c)
         ax2.plot(wl[sel_wl], (matrix_spec[i_model, sel_wl]/_norm)/(matrix_spec[arg_delta_min, sel_wl]/norm), alpha = 0.1,linewidth = 0.05, color=c)
         
@@ -238,7 +245,7 @@ def spectre(suffix_file, age50_min, age50_max):
     ax2.set_xlabel(r'$\lambda [\AA]$', size=20)
     ax2.set_ylabel(r'$L_{\lambda}/L_{\lambda,ref}$', size=20)
     ax1.set_ylabel(r'$L_{\lambda}/L_{\lambda,cont}$', size=20)
-    ax3.set_ylabel(r'$\Delta age_{n}$', size=20)
+    ax3.set_ylabel(r'$log_{10}(\Delta age_{n})$', size=20)
     
     #arrow
     ax3.annotate('S/N=5',
@@ -553,7 +560,7 @@ def spec_indices(suffix_file, age50_min, age50_max, wl_range1, wl_range2, wl_nor
 
     ax2.set_ylabel(r'$L_{\lambda}/L_{\lambda,ref}$', size=20)
     ax1.set_ylabel(r'$L_{\lambda}/L_{\lambda,cont}$', size=20)
-    ax3.set_ylabel(r'$\Delta age_{n}$', size=20)
+    ax3.set_ylabel(r'$log_{10}(\Delta age_{n})$', size=20)
     
     ax1.set_title(title1)
     ax4.set_title(title2)
