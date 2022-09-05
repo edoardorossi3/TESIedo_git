@@ -12,7 +12,8 @@ import scipy.ndimage as scind
 import function_plot as f_plt
 from tqdm import tqdm
 import astropy.io.fits as fits
-
+from astropy.table import Table
+from astropy.table import Column
 
 
 
@@ -20,6 +21,9 @@ import astropy.io.fits as fits
 work_dir='/export/home/extragal/zibetti/no_ownCloud/SteMaGE/data/SEDlibraries/Sandage_v4.1_Zfix_noburst_cb16MILES_1M/'
 f_name=work_dir+'sandage_varZ_v4.1_m62fix_noburst_1M_spec_dcombnull_001.fits'
 f_par=work_dir+'sandage_varZ_v4.1_m62fix_noburst_1M_spec_dcombnull_001_physpar_wagef.fits'
+
+
+t=Table()
 
 #age 
 prefix_file='sandage_varZ_v4.1_m62fix_noburst_1M_spec_dcombnull'
@@ -132,6 +136,7 @@ for i_bin in tqdm(range(1,Nbin_age50)):
     inter_delta=lambda x: np.interp(x, bin_centre, perc_delta_16-(mean_ref+std_ref))
     dage_n_lim[i_bin]=f_plt.bisection(inter_delta, -1.0, 1.2, 0.01)
 
-c=fits.Column(name="dage_n_lim", array=dage_n_lim, format='E', unit='dex')
-hs=fits.BinTableHDU.from_columns(c)
-hs.writeto(work_dir+'Time_resol_Zfix1M_SNR'+str(snr)+'.fits', overwrite=True)
+name_col="dage_n_lim_m62"
+new_col=Column(dage_n_lim, name=name_col)
+t.add_column(new_col)
+t.write(work_dir+'Time_resol_full_Zfix1M_SNR'+str(snr)+'.fits',format='fits', overwrite=True)
