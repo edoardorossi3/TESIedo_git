@@ -55,14 +55,14 @@ age50=np.log10(age50)
 #bin age50
 age50_bin=np.histogram(age50, bins=83, range=(6.0, 10.15))[1]
 Nbin_age50=np.size(age50_bin)
-dage_n_lim=np.zeros(Nbin_age50)
+dage_n_lim=np.zeros(Nbin_age50-1)
 #analysis for each bin
 wl=hdul[0].data
 sel_wl=(wl<5600) & (wl>3800)
 wl_sel=wl[sel_wl]
 N_col=np.size(wl_sel)
 
-snr=20
+snr=10
 wl_0=5500
 wl_1=5550
 sel_wl_sub=((wl_sel<5550) & (wl_sel>5500))
@@ -74,9 +74,9 @@ for i in range(0, np.size(wl_sub)-1):
     dwl=wl_sub[i+1]-wl_sub[i]
 
 
-for i_bin in tqdm(range(1,Nbin_age50)):
+for i_bin in tqdm(range(0,Nbin_age50-1)):
     
-    sel_models=(((age50)<age50_bin[i_bin]) & ((age50)>age50_bin[i_bin-1]))
+    sel_models=(((age50)<age50_bin[i_bin+1]) & ((age50)>age50_bin[i_bin]))
     N_row=np.sum(sel_models)
     matrix_spec=np.zeros(shape=(N_row, N_col))
     first_row=0
