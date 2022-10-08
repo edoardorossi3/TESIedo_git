@@ -58,11 +58,12 @@ Nbin_age50=np.size(age50_bin)
 dage_n_lim=np.zeros(Nbin_age50-1)
 #analysis for each bin
 wl=hdul[0].data
-sel_wl=(wl<5600) & (wl>3800)
+sel_wl=(wl<7000) & (wl>3500)
+#sel_wl=(wl<5600) & (wl>3800) 
 wl_sel=wl[sel_wl]
 N_col=np.size(wl_sel)
 
-snr=10
+snr=5
 wl_0=5500
 wl_1=5550
 sel_wl_sub=((wl_sel<5550) & (wl_sel>5500))
@@ -139,4 +140,4 @@ for i_bin in tqdm(range(0,Nbin_age50-1)):
 name_col="dage_n_lim_m62"
 new_col=Column(dage_n_lim, name=name_col)
 t.add_column(new_col)
-t.write(work_dir+'Time_resol_full_Zfix1M_SNR'+str(snr)+'.fits',format='fits', overwrite=True)
+t.write(work_dir+'Time_resol_full_widerangewl_Z62fix1M_SNR'+str(snr)+'.fits',format='fits', overwrite=True)
