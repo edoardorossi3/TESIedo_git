@@ -199,11 +199,19 @@ def spectre(suffix_file, age50_min, age50_max, dage_n_max=None):
         print('first_row:', first_row,'last_row:', last_row)
         first_row=last_row
     
+    
+    
     print('n_row:', N_row)
     #return
     #spec_sel=spec[sel_models, ...]
     #sel_delta_min=(delta==np.min(delta))
-    arg_delta_min=np.argmin(delta)
+    
+    dage_norm_sel=dage_norm[sel_models]
+    arg_delta_min=np.argmin(dage_norm_sel)
+    print('size dage_sel:', np.size(dage_norm_sel))
+    print('size_delta', np.size(delta))
+    
+    #arg_delta_min=np.argmin(delta)
     #print('first spec:', np.shape(hdul[1].data[0,...]))
     #norm=np.mean(matrix_spec[sel_delta_min,sel_norm])
     
